@@ -1,0 +1,14 @@
+{
+  "schema": "cardo/gates/v1",
+  "blockingChecks": [
+    "CHK-HEAD-1", "CHK-HEAD-2", "CHK-HEAD-3",
+    "CHK-LEN-1", "CHK-LEN-2",
+    "CHK-GAP-3", "CHK-PROC-1",
+    "CHK-BAN-1", "CHK-BAN-2"
+  ],
+  "gapModeRelaxed": ["CHK-LEN-1", "CHK-LEN-2"],
+  "gapModeThreshold": 0.3,
+  "contractFailMustBeZero": true,
+  "boundaryMustPass": true,
+  "traceCoverageMin": 1.0
+}

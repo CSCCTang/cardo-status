@@ -1,0 +1,21 @@
+# 运行期与本地件
+.cardo/
+.cardc-tmp/
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+runtime/
+wheels/
+dist/
+*.tgz
+*.log
+开工看板.html
+开工看板.htm
+# 令牌与环境
+.env
+*.pem
+token.txt
+# 编辑器
+.vscode/
+.idea/

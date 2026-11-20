@@ -1,0 +1,17 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch03
+  h1: 现状详细分析
+  unit: C
+  skill: cardo-status-chapter-current
+  sections:
+  - 土地与空间利用现状
+  - 建筑现状与风貌保护现状
+  - 人口与社会人居现状
+  - 街区业态与经营现状
+  - 交通与通行现状
+  - 市政基础设施现状
+  - 公共服务配套现状
+  - 生态与人居环境现状
+  min_chars: 4000

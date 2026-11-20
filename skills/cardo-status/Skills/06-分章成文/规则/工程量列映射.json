@@ -1,0 +1,12 @@
+{
+ "schema": "cardo/work-column-map/v1",
+ "note": "台账 Sheet1-2（各小区改造工程量统计表）列映射：台账列名原文 → 报告项名 → 单位。生成时按列名匹配取列，匹配不上直接报错，不按列序猜；源表头原文另存进 工程量核算.json。",
+ "columns": [
+  {"match": "立面材料修缮或翻新", "item": "立面材料修缮或翻新", "unit": "平方米", "role": "facade"},
+  {"match": "屋面翻新", "item": "屋面翻新", "unit": "平方米", "role": "roof"},
+  {"match": "更换外墙雨棚", "item": "更换外墙雨棚", "unit": "个", "role": "awning"},
+  {"match": "冷凝水管", "item": "冷凝水管", "unit": "米", "role": "condensate"},
+  {"match": "落水管", "item": "落水管", "unit": "米", "role": "downpipe"},
+  {"match": "空调外机披水板", "item": "空调外机披水板", "unit": "个", "role": "apron"}
+ ]
+}

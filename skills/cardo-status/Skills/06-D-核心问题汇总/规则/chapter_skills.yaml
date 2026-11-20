@@ -1,0 +1,17 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch04
+  h1: 核心问题汇总
+  unit: D
+  skill: cardo-status-chapter-problems
+  sections:
+  - 街巷空间与肌理问题
+  - 建筑安全与风貌破损问题
+  - 文脉保护与活化不足问题
+  - 业态老旧与活力不足问题
+  - 交通通行与消防隐患突出问题
+  - 基础设施老旧滞后问题
+  - 民生配套与人居品质偏低
+  - 街区治理与运营短板
+  min_chars: 3000

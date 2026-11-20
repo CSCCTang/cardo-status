@@ -1,0 +1,106 @@
+# 表格契约 v1（cardo-status-report · T19）
+#
+# 是什么：报告里每张表的“口径判据”——挂在哪个章节节点下、表头列是什么、单位/空值/合计/闭环怎么判。
+# 与章节契约的分工：章节契约管“每节写到什么”，本文件管“每张表长什么样”；表通过 table_required
+# 从章节契约引用（如 t02-r3 -> TBL-01）。
+#
+# 判据语义（由 check_contracts.py 实现，本文件只给参数）：
+#   * columns_mode: exact=表头列名与顺序全等；subset=契约列必须都在（允许项目加列）
+#   * unit_required: 表头必须显式单位（如“金额（万元）”“占比（%）”）
+#   * checks 里的名字：
+#       empty_cell_ratio  数据行空单元格比例 ≤ 阈值（默认 0，即不许留空）
+#       source_row        本表所在节必须有且仅一条「（数据来源：…）」独立行（见 defaults）
+#       missing_id_closure  缺项表编号与正文内联标记双向闭环（明细由 CHK-GAP-1 给）
+#   * sum_row: required=必须有合计行且数值等于上方之和；optional=有合计行就校验、没有不判失败
+#   * status: active=必须存在且受检；planned=未产出只提示、不判 fail（能力条目先占位）
+#   * 表格按“表头列”识别，不依赖文档位置；同名表多份按出现顺序编号 .a/.b
+#
+# 新增表的口径：先在 paragraphs 契约加 anchor，再在本文件加一条，最后才决定是否需要脚本。
+# 改本文件 = 改标准 → version+1 + 跑回归（docs/数据与标准基线.md §4）。
+schema: cardo/table-contract/v1
+version: 1
+
+defaults:
+  source_cell_required: true     # 统计类表格所在节必须有「（数据来源：…）」行
+  no_empty_placeholder: true     # 不许用空单元格冒充“没有数据”；缺的东西进缺项/待补清单
+  empty_cell_ratio: 0.0
+
+tables:
+  - id: TBL-01
+    name: 投资估算费用构成表
+    anchor_node: t02
+    columns: [费用构成, 金额（万元）, 占总投资比例]
+    columns_mode: exact
+    unit_required: true
+    checks: [empty_cell_ratio, source_row]
+    sum_row: optional            # 正文已给总投资时可不单列合计行
+    # status: planned —— 投资估算表依赖**有口径的投资数据**。
+    # 实测项目信息卡（OCR）里的「20000 12000」没有表头说明是投资额，
+    # 按「不编造」红线不得写成投资估算表（写出来就是凭空造数）。
+    # 故本表降为 planned：材料没有可核的投资数据时只提示、不判 fail，
+    # 由 06 步在正文显式声明「资料缺失」并挂缺项编号。
+    # 材料齐备（拿到正式投资估算文件）后，本表会自动恢复为必须存在。
+    status: planned
+
+  - id: TBL-02
+    name: 核心问题清单
+    anchor_node: t18
+    columns: [序号, 问题类别, 问题表征, 关键事实与指标]
+    columns_mode: exact
+    unit_required: false
+    checks: [empty_cell_ratio, source_row]
+    sum_row: off
+    status: active
+
+  - id: TBL-03
+    name: 附件一 现有基础资料清单
+    anchor_node: t23
+    columns: [序号, 文件名称, 类型, 主要用途, 本次使用情况]
+    columns_mode: exact
+    unit_required: false
+    checks: [empty_cell_ratio, source_row]
+    sum_row: off
+    status: active
+
+  - id: TBL-04
+    name: 附件二 图件与影像资料
+    anchor_node: t23
+    columns: [序号, 图件/影像, 应表达的内容, 状态]
+    columns_mode: exact
+    unit_required: false
+    checks: [empty_cell_ratio, source_row]
+    sum_row: off
+    status: active
+
+  - id: TBL-05
+    name: 附件三 专项台账
+    anchor_node: t23
+    columns: [序号, 台账名称, 应包含字段, 状态]
+    columns_mode: exact
+    unit_required: false
+    checks: [empty_cell_ratio, source_row]
+    sum_row: off
+    status: active
+
+  - id: TBL-06
+    name: 附件四 数据缺口索引
+    anchor_node: t23
+    columns: [编号, 缺项内容, 建议来源, 现有替代性判断]
+    columns_mode: exact
+    unit_required: false
+    checks: [empty_cell_ratio, source_row, missing_id_closure]
+    sum_row: off
+    # status: planned —— v2 决定（2026-11-11）：缺口版附件四只保留「缺口索引」一页，
+    # 指向同目录《数据缺口清单.xlsx》，不再在正文里造完整缺口表。
+    # 故本表降为 planned：没有表只提示、不判 fail；缺口的行级闭环由 xlsx 承担。
+    status: planned
+
+  - id: TBL-07
+    name: 表 3.1 用地与空间利用统计（T15 产出）
+    anchor_node: t10
+    columns: [用地分类, 面积（㎡）, 占比（%）]
+    columns_mode: subset
+    unit_required: true
+    checks: [empty_cell_ratio, source_row]
+    sum_row: required
+    status: planned              # 黄金实例未产出：只提示，不判 fail

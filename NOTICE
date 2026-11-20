@@ -1,0 +1,27 @@
+Cardo 现状分析 dsh 插件（cardo-status）
+Copyright (C) 2026 Cardo contributors
+
+本程序是自由软件：你可以依据 GNU Affero 通用公共许可证（AGPL-3.0-or-later）
+的条款重新分发和/或修改它。本程序按“无任何担保”分发，不附带任何默示担保，
+包括适销性或特定用途适用性的担保。详见 LICENSE。
+
+本程序通过 dsh（DeepSeek Harness）以技能形式运行。
+
+第三方组件
+----------
+1. PyMuPDF / pymupdf
+   - 许可证：AGPL-3.0 或 Artifex 商业许可（双许可）
+   - 用途：PDF 采样、有文本层 PDF 全文抽取
+   - 影响：本仓库因此以 AGPL-3.0 公开；通过网络提供服务时，须按 AGPL 第 13 条
+     向使用者提供对应源码。商业闭源分发须另行取得 Artifex 商业许可。
+2. 其他依赖
+   python-docx（MIT）、openpyxl（MIT）、PyYAML（MIT）、pypdf（BSD-3-Clause）、
+   rapidocr-onnxruntime（Apache-2.0）、opencv-python-headless（Apache-2.0）、
+   onnxruntime（MIT）、numpy（BSD-3-Clause）。逐项见 THIRD_PARTY_LICENSES.md。
+3. 本包不调用 OSGB → 3D Tiles 转换器，不分发任何第三方二进制或运行时。
+
+依据库与示例数据
+----------------
+assets/依据库 以四川（含四川省、成都市）为样本，使用者按项目所在地替换；
+仓库内项目名、地域、机构名、人名已替换为通用示例，不含真实项目资料、院内文件与个人信息。
+

@@ -1,0 +1,461 @@
+# 必备材料清单 v1（cardo-project-material · 齐套性检查）
+#
+# 用途：check_materials.py 据此判断「某个方向的城市更新项目，做一份标准现状分析报告
+#       （模板六章）所需的输入材料是否齐套」，并把缺项转成可直接发给用户的补齐提醒。
+# 判定依据：报告模板正文每段都标注「（数据来源：项目资料、无人机航拍资料、网络资料）」，
+#           本清单逐项落成「材料 → 影响模板哪几章」的对应关系。
+#
+# 结构：
+#   common           三类方向都需要的通用材料
+#   direction_extra  各方向在通用之外必须/建议增补的材料，键为方向目录名
+#                    （方向名单以 项目库配置.yaml 的 directions 为准，方向一/二/三）
+#
+# 字段：
+#   id             编号，common 用 M 段，方向增补用 S/F/X 段
+#   name           材料名（写用户看得懂的全称）
+#   level          缺失等级：必需 / 建议 / 可选
+#                  - 必需：缺了对应章节就没有第一手依据，出稿前必须让用户拍板
+#                  - 建议：有则更扎实，没有可先出稿
+#                  - 可选：锦上添花，不提示
+#   chapters       影响模板哪几章（模板六章：项目概述 / 片区基础概况分析 / 现状详细分析 /
+#                  核心问题汇总 / 现状综合研判与更新思路 / 附件）
+#   why            一句话说明「为什么需要」
+#   hints          文件名或父目录命中的强关键词（命中即视为已有该材料）
+#   weak_hints     弱线索关键词：命中只算「疑似」，需用户确认算不算
+#   exclude_hints  一票否决词：文件名含这些词的文件不参与本项匹配
+#                  （例：文件名是「…可行性研究报告的批复」时，对「可研」是批复不是可研）
+#   ext            可接受的扩展名；给了就作为硬门槛（不在此列的扩展名不参与匹配）
+#   source         向谁要（提醒文案直接用）
+#   match_category 对应 分类规则.yaml 的类别（id 或 label 均可）；分类清单命中即强证据
+#
+# 判定口径（脚本实现，规则只提供材料）：
+#   文件名命中 hints 每词 +3，父目录命中 hints 每词 +2，分类清单命中 match_category +6，
+#   弱线索每词 +1；有强证据且 ≥3 分 = 已齐，只有弱证据 = 待确认-疑似，0 分 = 缺失。
+#   「已齐」只证明「有这份材料」，不证明版本新、时效近——版本/时效另行确认。
+#
+# v2 口径（结论优先改版）：
+#   * 本清单只影响「哪一章还能更强」，**不影响能否出稿**、不影响初步判定；
+#   * 缺料不再写「缺了写不出」，正文也不写「资料缺失」——缺口只进 数据缺口清单.xlsx；
+#   * 已按用户反馈删除 M16 既有成果：提资材料本身够用，不再要求上一版成果；
+#   * M14 无人机航拍/现场影像由「必需」降为「可选」：有图引用、无图用文字描述，不出缺项。
+
+version: 1
+
+# ── 网络补齐策略（供 web-supplement 技能用；check_materials 暂不读，接线后按此判定）──
+# 缺材料时先只「提醒」，不阻塞；用户可以选择「上网补齐」。上网能补什么、不能补什么，
+# 由下面两组名单决定——**内部数据不许编**，这是硬边界。
+web_fill_policy:
+  # 可以上网补：公开、可核实、能给出处
+  fillable_keywords:
+    - 政策
+    - 法规
+    - 上位规划
+    - 专项规划
+    - 标准规范
+    - 历史沿革
+    - 公开统计
+    - 片区概况
+    - 周边配套
+  # 不许上网补（属于项目内部事实，网上没有可信来源，只能等用户给）
+  not_fillable_keywords:
+    - 台账
+    - 权属
+    - 鉴定
+    - 排查
+    - 民意
+    - 调研
+    - 户数
+    - 商户
+    - 测绘
+    - 影像
+    - 航拍
+  rules:
+    - 每条网络补齐的内容必须写来源（机构/文件/网址）与获取日期，进报告时按「网络资料」标注
+    - 与项目原始材料冲突时，一律以原始材料为准，并在正文注明差异
+    - 不可补项不再写「待补」，改为按同类项目公开区间给出初步判定（标注「推断」+置信度），并在 数据缺口清单.xlsx 里登记「补了会把哪一章做得更准」
+    - 撰写阶段应当主动检索政策、片区公开统计、体检/造价指标与同类案例，减少用户二次查资料
+
+common:
+  - id: M01
+    name: 可行性研究报告（或项目申请报告）
+    level: 必需
+    chapters: [项目概述, 片区基础概况分析, 现状详细分析]
+    why: 项目名称、性质、规模、投资、工期与现状问题的第一手来源
+    hints: [可行性研究报告, 可研报告, 可研, 项目申请报告, 报批稿]
+    exclude_hints: [批复, 请示, 审查意见, 复函, 核准]
+    ext: [pdf, docx, doc, wps]
+    source: 建设单位／可研编制单位
+    source_note: 归入「批复与可研」组
+    delivery_dir: 批复与可研
+    match_category: 可行性研究报告
+
+  - id: M02
+    name: 立项或批复文件（立项、可研、初设、调整批复）
+    level: 必需
+    chapters: [项目概述, 附件]
+    why: 确认项目已立项、建设内容与投资口径的合规依据
+    hints: [批复, 立项, 核准, 备案, 请示, 审查意见, 复函]
+    ext: [pdf, docx, doc, jpg, jpeg, png]
+    source: 建设单位／发改、住建主管部门
+    source_note: 归入「批复与可研」组
+    delivery_dir: 批复与可研
+    match_category: 批复文件
+
+  - id: M03
+    name: 项目清单与投资估算（含资金来源、资金申报）
+    level: 必需
+    chapters: [项目概述, 现状详细分析, 附件]
+    why: 分项工程内容、投资构成与资金来源的量化底表
+    hints: [项目清单, 投资估算, 投资表, 概算, 资金申报, 资金筹措, 清单]
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    source: 建设单位／造价咨询单位
+    source_note: 归入「清单与投资」组
+    delivery_dir: 清单与投资
+    match_category: 项目清单/投资表
+
+  - id: M04
+    name: 城市体检报告（片区体检指标与结论）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+    why: 现状指标基准值（路网、慢行、停车、设施）的权威来源
+    hints: [城市体检, 体检报告, 体检]
+    ext: [pdf, docx, doc, xlsx]
+    source: 住建部门／第三方体检机构
+    source_note: 归入「体检与策划」组
+    delivery_dir: 体检与策划
+    match_category: 城市体检报告
+
+  - id: M05
+    name: 片区策划、城市设计或控制性详细规划
+    level: 必需
+    chapters: [项目概述, 片区基础概况分析, 现状综合研判与更新思路]
+    why: 片区定位、空间结构、控规指标与更新方向的上位依据
+    hints: [片区策划, 城市设计, 城市更新策划, 控规, 控制性详细规划, 专项规划]
+    ext: [pdf, docx, doc, ppt, pptx, jpg, jpeg, png]
+    source: 自然资源和规划部门／策划设计单位
+    source_note: 归入「体检与策划」组
+    delivery_dir: 体检与策划
+    match_category: 片区策划/城市设计
+
+  - id: M06
+    name: 现状测绘图纸（总平面、街巷、地下管线）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+    why: 用地边界、建筑与街巷尺寸、管线走向的实测底图
+    hints: [现状测绘, 地形图, 总平面, 街巷测绘, 管线图, 平面图, 现状图]
+    weak_hints: [附图, 图纸, 测绘, 比例尺]
+    ext: [pdf, dwg, dxf, jpg, jpeg, png, tif, tiff]
+    source: 测绘单位／设计单位
+    source_note: 归入「图纸与测绘」组
+    delivery_dir: 图纸与测绘
+    match_category: 测绘/图纸
+
+  - id: M07
+    name: 建筑安全排查台账或危房鉴定报告
+    level: 必需
+    chapters: [现状详细分析, 核心问题汇总]
+    why: 分栋结构安全等级、危房数量与面积的直接依据
+    hints: [建筑安全, 安全排查, 危房, 房屋安全鉴定, 结构鉴定, 排查台账]
+    ext: [xls, xlsx, pdf, docx, doc]
+    source: 住建部门／房屋安全鉴定机构
+    source_note: 归入「安全与消防」组
+    delivery_dir: 安全与消防
+
+  - id: M08
+    name: 消防隐患专项排查（设施配置、通道、风险点）
+    level: 必需
+    chapters: [现状详细分析, 核心问题汇总]
+    why: 消火栓、消防通道与火灾风险分级的实测台账
+    hints: [消防, 火灾隐患, 消防设施, 消防通道, 消防安全]
+    ext: [xls, xlsx, pdf, docx, doc, jpg, jpeg, png]
+    source: 消防救援部门／街道办
+    source_note: 归入「安全与消防」组
+    delivery_dir: 安全与消防
+
+  - id: M09
+    name: 人口与住户台账（户数、人口、年龄结构、特殊群体）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析]
+    why: 人口规模、老龄化率与居住密度的统计口径来源
+    hints: [人口, 住户, 户籍, 户数, 常住, 居住台账]
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    source: 街道办／社区／公安户籍部门
+    source_note: 归入「人口与业态」组
+    delivery_dir: 人口与业态
+
+  - id: M10
+    name: 商户经营台账（数量、面积、业态、空置率、租金）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+    why: 业态结构与商业活力的定量依据
+    hints: [商户, 经营台账, 业态, 商铺, 摊位, 商业网点]
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    source: 市场监管部门／运营单位／街道办
+    source_note: 归入「人口与业态」组
+    delivery_dir: 人口与业态
+
+  - id: M11
+    name: 市政管网普查（给水、排水、燃气、电力、通信）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+    why: 管径、长度、材质、敷设年代与缺失段落的普查数据
+    hints: [管网普查, 管线普查, 管网, 管线, 给水, 排水, 燃气, 雨污]
+    weak_hints: [市政道路, 沟渠, 改道]
+    ext: [pdf, xlsx, xls, docx, doc, dwg]
+    source: 供水、排水、燃气等专营单位及管线主管单位
+    source_note: 归入「管网与市政」组
+    delivery_dir: 管网与市政
+
+  - id: M12
+    name: 交通与停车调查（流量、断面、泊位、慢行）
+    level: 必需
+    chapters: [现状详细分析, 核心问题汇总, 现状综合研判与更新思路]
+    why: 路网通行能力、停车缺口与慢行连续性的实测数据
+    hints: [交通调查, 停车, 交通量, 慢行, 车行, 交通组织, 泊位]
+    weak_hints: [道路, 交通]
+    ext: [xls, xlsx, pdf, docx, doc, jpg, jpeg, png]
+    source: 交管部门／交通设计单位
+    source_note: 归入「管网与市政」组
+    delivery_dir: 管网与市政
+
+  - id: M13
+    name: 公共服务设施台账（教育、医疗、养老、文体、社区服务）
+    level: 必需
+    chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+    why: 公服设施数量、面积、服务半径与缺口的底数
+    hints: [公共服务, 公服, 教育设施, 医疗, 养老, 社区服务, 设施台账]
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    source: 街道办／民政、教育、卫健主管部门
+    source_note: 归入「民生与配套」组
+    delivery_dir: 民生与配套
+
+  - id: M14
+    name: 无人机航拍与现场影像（照片、视频）
+    level: 可选
+    chapters: [项目概述, 片区基础概况分析, 附件]
+    why: 有图会强化第1、2章与附件的直观表达；无图不影响任何结论（用四至、面积与周边关系文字描述）
+    hints: [航拍, 无人机, 现场照片, 现场影像, 照片, 视频, 踏勘影像]
+    ext: [jpg, jpeg, png, heic, mp4, mov, avi, m4v]
+    source: 建设单位／无人机航拍服务单位／踏勘团队
+    source_note: 归入「图纸与测绘」组
+    delivery_dir: 图纸与测绘
+    match_category: 影像资料
+
+  - id: M15
+    name: 居民与商户民意调研（问卷、座谈、访谈）
+    level: 必需
+    chapters: [现状详细分析, 核心问题汇总, 现状综合研判与更新思路]
+    why: 诉求排序、改造意愿与阻工风险点的直接依据
+    hints: [民意, 调研, 问卷, 座谈, 访谈, 居民意愿, 征求意见, 需求]
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    source: 街道办／社区／调研机构
+    source_note: 归入「人口与业态」组
+    delivery_dir: 人口与业态
+    match_category: 民意与需求
+
+  - id: M17
+    name: 会议纪要（专题会、协调会）
+    level: 建议
+    chapters: [项目概述, 现状综合研判与更新思路]
+    why: 政府与部门口径、议定事项的留痕
+    hints: [会议纪要, 纪要, 专题会, 协调会, 会议记录]
+    ext: [pdf, docx, doc, txt, md]
+    source: 建设单位／街道办
+    source_note: 归入「民生与配套」组
+    delivery_dir: 民生与配套
+    match_category: 会议纪要
+
+  - id: M18
+    name: 上位规划与专项规划（更新专项、历史保护等）
+    level: 建议
+    chapters: [项目概述, 片区基础概况分析, 现状综合研判与更新思路]
+    why: 更新单元划定、指标符合性与政策边界的依据
+    hints: [城市更新专项规划, 专项规划, 总体规划, 保护规划, 规划文本]
+    ext: [pdf, docx, doc, ppt, pptx]
+    source: 自然资源和规划部门
+    source_note: 归入「体检与策划」组
+    delivery_dir: 体检与策划
+
+  - id: M19
+    name: 政策文件与申报指南（资金、审批、更新政策）
+    level: 建议
+    chapters: [项目概述, 现状综合研判与更新思路]
+    why: 申报口径、审批流程与合规性判断依据
+    hints: [政策, 申报指南, 管理办法, 实施细则, 工作指引]
+    ext: [pdf, docx, doc, txt]
+    source: 发改、住建、财政部门
+    source_note: 归入「批复与可研」组
+    delivery_dir: 批复与可研
+
+  - id: M20
+    name: 现场踏勘记录与照片（非航拍）
+    level: 建议
+    chapters: [片区基础概况分析, 附件]
+    why: 补充街巷细节与问题点位的现场记录
+    hints: [踏勘, 现场记录, 现场照片, 调研记录]
+    ext: [jpg, jpeg, png, docx, doc, pdf]
+    source: 踏勘团队／建设单位
+    source_note: 归入「图纸与测绘」组
+    delivery_dir: 图纸与测绘
+
+  - id: M21
+    name: 同类项目案例与参考方案
+    level: 可选
+    chapters: [现状综合研判与更新思路]
+    why: 更新手法与实施路径的横向参照
+    hints: [案例, 参考方案, 对标, 借鉴]
+    ext: [pdf, docx, doc, ppt, pptx]
+    source: 编制单位自备
+    source_note: 归入「体检与策划」组
+    delivery_dir: 体检与策划
+
+direction_extra:
+  老旧街区项目:
+    - id: S01
+      name: 历史文化资源普查台账（历史建筑、老字号、古树名木、工业遗产）
+      level: 必需
+      chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总, 附件]
+      why: 历史建筑名录、遗存本体与保护等级的保护依据
+      hints: [历史文化, 历史建筑, 老字号, 古树, 名木, 文物, 工业遗产, 资源普查]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 文旅部门／地方志办／街道办
+
+    - id: S02
+      name: 街巷空间与沿街立面测绘（肌理、立面、店招）
+      level: 必需
+      chapters: [片区基础概况分析, 现状详细分析]
+      why: 街巷格局、院落肌理与沿街立面整治的实测依据
+      hints: [街巷, 立面, 店招, 肌理, 巷道, 沿街]
+      weak_hints: [测绘, 图纸]
+      ext: [pdf, dwg, dxf, jpg, jpeg, png]
+      source: 测绘单位／设计单位
+
+    - id: S03
+      name: 历史建筑与传统风貌保护专项方案
+      level: 建议
+      chapters: [现状详细分析, 现状综合研判与更新思路]
+      why: 保护对象清单、修缮措施与利用方式的专项依据
+      hints: [保护规划, 保护方案, 修缮, 风貌保护, 活化利用]
+      ext: [pdf, docx, doc, ppt, pptx]
+      source: 文旅部门／设计单位
+
+    - id: S04
+      name: 街区业态与活力调查（客流、空置率、租金）
+      level: 建议
+      chapters: [片区基础概况分析, 现状详细分析, 现状综合研判与更新思路]
+      why: 业态结构、商业活力与运营潜力的定量依据
+      hints: [业态, 活力, 客流, 空置率, 租金, 商业调查]
+      weak_hints: [商业, 商户]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 运营单位／市场监管部门
+
+  老旧厂区项目:
+    - id: F01
+      name: 工业遗产清单（厂房、构筑物、设备、工艺流程）
+      level: 必需
+      chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总, 附件]
+      why: 保护等级、本体构成与再利用价值的清单依据
+      hints: [工业遗产, 遗产清单, 厂房, 构筑物, 设备遗存, 工艺流程, 建厂]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 国资／工信部门／原厂档案部门
+
+    - id: F02
+      name: 厂房结构安全鉴定（含抗震、耐久性）
+      level: 必需
+      chapters: [现状详细分析, 核心问题汇总]
+      why: 厂房结构安全等级、改造可行性与加固成本的依据
+      hints: [结构鉴定, 厂房鉴定, 安全鉴定, 抗震, 耐久性, 危房]
+      ext: [pdf, docx, doc, xlsx]
+      source: 房屋安全鉴定机构／设计单位
+
+    - id: F03
+      name: 土壤与地下水环境调查（初调、详调）
+      level: 必需
+      chapters: [现状详细分析, 核心问题汇总, 附件]
+      why: 污染状况、修复责任与再开发约束的法定依据
+      hints: [土壤, 地下水, 环境调查, 初调, 详调, 污染]
+      ext: [pdf, docx, doc, xlsx]
+      source: 生态环境部门／环境调查机构
+
+    - id: F04
+      name: 企业搬迁与产业资料（企业清单、产能、搬迁计划、职工安置）
+      level: 必需
+      chapters: [项目概述, 片区基础概况分析, 现状综合研判与更新思路]
+      why: 企业腾退时序、产业延续与职工安置的方案依据
+      hints: [企业清单, 产能, 搬迁, 腾退, 职工安置, 产业]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 工信部门／国资平台／原企业
+
+    - id: F05
+      name: 危化品与消防专项（存储、消防验收）
+      level: 建议
+      chapters: [现状详细分析, 核心问题汇总]
+      why: 危化品遗留与消防验收状况的风险排查依据
+      hints: [危化品, 消防验收, 消防安全, 化学品]
+      ext: [xls, xlsx, pdf, docx, doc]
+      source: 应急管理部门／消防救援部门
+
+    - id: F06
+      name: 厂区权属与用地台账（宗地、房屋产权）
+      level: 建议
+      chapters: [片区基础概况分析, 现状详细分析]
+      why: 土地收储、权属处置与补偿测算的基础数据
+      hints: [权属, 宗地, 产权, 不动产, 用地台账]
+      ext: [xls, xlsx, pdf, docx, doc]
+      source: 自然资源部门／不动产登记中心
+
+  老旧小区项目:
+    - id: X01
+      name: 楼栋与户数台账（栋数、户数、层数、建成年代、产权）
+      level: 必需
+      chapters: [片区基础概况分析, 现状详细分析, 核心问题汇总]
+      why: 改造规模、户数底数与实施难度的基础数据
+      hints: [楼栋, 户数, 楼栋台账, 建成年代, 产权, 住宅]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 街道办／社区／住建部门
+
+    - id: X02
+      name: 电梯现状与加装意愿台账
+      level: 必需
+      chapters: [现状详细分析, 核心问题汇总, 现状综合研判与更新思路]
+      why: 电梯缺口、加装条件与居民意愿的依据
+      hints: [电梯, 加装电梯, 电梯台账, 电梯现状]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 街道办／物业／市场监管部门
+
+    - id: X03
+      name: 物业服务与维修资金资料
+      level: 必需
+      chapters: [项目概述, 现状详细分析, 现状综合研判与更新思路]
+      why: 物业覆盖、维修资金余额与长效运维能力的依据
+      hints: [物业, 维修资金, 物业服务, 业委会, 管理规约]
+      ext: [xls, xlsx, pdf, docx, doc, csv]
+      source: 街道办／物业公司／住建部门
+
+    - id: X04
+      name: 雨污分流与管线现状
+      level: 必需
+      chapters: [现状详细分析, 核心问题汇总]
+      why: 雨污混接、管网缺失与改造工程量的现状依据
+      hints: [雨污分流, 雨污, 排水管网, 管网, 管线, 污水]
+      weak_hints: [市政道路, 沟渠]
+      ext: [pdf, xlsx, xls, docx, doc, dwg]
+      source: 排水主管部门／专营单位
+
+    - id: X05
+      name: 停车与充电设施现状
+      level: 建议
+      chapters: [现状详细分析, 核心问题汇总]
+      why: 停车缺口与充电设施配建的量化依据
+      hints: [停车, 充电, 泊位, 停车场]
+      ext: [xls, xlsx, pdf, docx, doc, jpg, jpeg, png]
+      source: 交管部门／街道办／物业
+
+    - id: X06
+      name: 适老化与无障碍现状
+      level: 建议
+      chapters: [片区基础概况分析, 现状详细分析]
+      why: 适老化改造与无障碍提升的需求依据
+      hints: [适老化, 无障碍, 养老, 老年]
+      ext: [xls, xlsx, pdf, docx, doc, jpg, jpeg, png]
+      source: 街道办／民政部门

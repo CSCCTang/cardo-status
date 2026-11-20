@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cardo/trace/v1 成果回溯表",
+  "description": "成果 → factId / source 的引用视图；只存引用，不复制正文/数值。路径一律相对项目根 posix；检查器见 scripts/check_trace.py。",
+  "type": "object",
+  "required": ["schema", "artifact", "generatedBy", "baselineVersion", "scope", "items"],
+  "properties": {
+    "schema": {"const": "cardo/trace/v1"},
+    "generatedAt": {"type": "string", "description": "仅此处放时间戳，便于 diff"},
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sha256", "kind"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^(?![A-Za-z]:|/|\\\\).+$"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "kind": {"enum": ["report", "table", "material", "index", "request"]}
+      }
+    },
+    "generatedBy": {
+      "type": "object",
+      "required": ["skill", "script", "version"],
+      "properties": {
+        "skill": {"type": "string"},
+        "script": {"type": "string"},
+        "version": {"type": "string"},
+        "at": {"type": "string"}
+      }
+    },
+    "baselineVersion": {"type": "string"},
+    "scope": {
+      "type": "object",
+      "required": ["level"],
+      "properties": {
+        "level": {"enum": ["strong", "light"]},
+        "note": {"type": "string", "description": "strong=交付物（断链即失败）；light=过程件（记录生成来源与输入清单）"}
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "locator", "confidence", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "locator": {"type": "string", "description": "稳定定位：tNN/第 N 段/block N/table N row M"},
+          "value": {"type": ["number", "string"], "description": "兼容旧表；新表不复制数值，数值以事实库为唯一来源"},
+          "unit": {"type": "string"},
+          "factId": {"type": "string", "pattern": "^F-\\d{4}$"},
+          "source": {
+            "type": "object",
+            "required": ["file", "locator", "quote", "docVersion"],
+            "properties": {
+              "file": {"type": "string", "pattern": "^(?![A-Za-z]:|/|\\\\).+$"},
+              "locator": {"type": "string"},
+              "quote": {"type": "string"},
+              "docVersion": {"type": "string"},
+              "sha256": {"type": "string"}
+            }
+          },
+          "formula": {"type": ["string", "null"]},
+          "ruleVersion": {"type": ["integer", "null"]},
+          "confidence": {"enum": ["high", "medium", "low"]},
+          "status": {"enum": ["confirmed", "missing", "conflict"]}
+        }
+      }
+    }
+  }
+}

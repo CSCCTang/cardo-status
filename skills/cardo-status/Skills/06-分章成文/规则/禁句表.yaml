@@ -1,0 +1,24 @@
+schema: cardo/banned-phrases/v1
+version: 1
+# 禁句单一来源：06 成文、09 自检、11 份章节契约都引用本文件，不再各自复制清单。
+# scopes:
+#   gap   = 实质性缺口/待补表述（正文与契约用）
+#   empty = 空洞套话（仅摘句阶段用）
+#   clean = 干净版正文禁止的缺口口语（09 CHK-CLEAN-1）
+# 新增/删除禁句只改这里；改完跑一次文本预检确认无新误伤。
+phrases:
+  - {pattern: 资料缺失, scopes: [gap, clean]}
+  - {pattern: 缺项, scopes: [gap]}
+  - {pattern: 待补, scopes: [gap, clean]}
+  - {pattern: 未提供, scopes: [gap, clean]}
+  - {pattern: 资料不足, scopes: [gap, clean]}
+  - {pattern: 本节不作推断, scopes: [gap]}
+  - {pattern: 不作推断, scopes: [gap]}
+  - {pattern: 缺项-, scopes: [clean]}
+  - {pattern: 找谁补, scopes: [clean]}
+  - {pattern: 缺什么, scopes: [clean]}
+  - {pattern: 高度重视, scopes: [empty]}
+  - {pattern: 进一步加强, scopes: [empty]}
+  - {pattern: 大力推进, scopes: [empty]}
+  - {pattern: 不断提升, scopes: [empty]}
+  - {pattern: 切实抓好, scopes: [empty]}

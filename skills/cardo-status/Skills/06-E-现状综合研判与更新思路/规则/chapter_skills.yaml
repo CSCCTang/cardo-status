@@ -1,0 +1,12 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch05
+  h1: 现状综合研判与更新思路
+  unit: E
+  skill: cardo-status-chapter-strategy
+  sections:
+  - 综合现状研判
+  - 总体更新思路
+  - 核心更新改造方向
+  min_chars: 1500

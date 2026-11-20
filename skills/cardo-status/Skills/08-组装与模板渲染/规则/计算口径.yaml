@@ -1,0 +1,66 @@
+# 计算口径（标准基线资产，随 cardo-status-report skill 分发；T23 v0）
+#
+# 定位：只放「怎么算」与「允许的数据从哪来」，不放项目数据、不放最终结果。
+# 改口径 = 改标准：version +1、升基线版本（D2 基线清单）、跑 T23 回归
+#   （同输入对比 ruleVersion + 输入指纹 + 结果）；只改引擎实现不动口径语义 → 只跑回归。
+#
+# 约定（T23 v0，改语义须升 version）：
+#   * 指标 id 稳定（CALC-nn），不得复用已删 id；metrics 顺序即计算顺序。
+#   * formula 只允许白名单运算：sum/avg/ratio/min/max 与四则（+ - * /），
+#     除法除零显式处理（不产 0、不补数）；禁止任意代码执行。
+#   * inputs[].key 以 `_i` 结尾 = 逐项序列（同一 key 可有多条 cell）；否则为标量。
+#   * inputs[].label/unit 为 T23 扩展：label 供人读，unit 是取数单位口径（必须与 cell.unit 一致）。
+#   * checks 里字符串 = 无参检查；行内映射 = 带参检查（name 必填）。
+#   * 缺数一律 status=gap（对应缺项），不自动补数、不用行业经验值；
+#     单位不一致 / 除零 / 占比合计超容差 → status=needs_confirm（走 G-table/G2/G6 闸门）。
+#   * 容差单位：sum_row 为相对偏差（|合计-逐行之和| / max(|合计|,1)）；ratio_sum 为百分点。
+
+schema: cardo/calc-rules/v1
+version: 1
+
+units:
+  面积: 平方米
+  占比: "%"
+
+tolerances:
+  sum_row: 0.01          # 合计行相对偏差上限（1%）
+  ratio_sum: 0.5         # 占比合计允许偏差（百分点）
+
+metrics:
+  - id: CALC-01
+    name: 用地面积合计
+    unit: 平方米
+    formula: sum(area_i)
+    inputs:
+      - {key: area_i, label: 用地分类, from: 表 3.1 用地分类表.面积列, unit: 平方米, required: true}
+    rounding: {decimals: 2, mode: half_up}
+    missing_policy: gap
+    checks: [unit_required]
+    note: 表 3.1 合计行（TBL-07）；口径争议走 T15 的 G-table 闸门
+
+  - id: CALC-02
+    name: 各类用地占比
+    unit: "%"
+    formula: ratio(area_i, sum(area_i))
+    inputs:
+      - {key: area_i, label: 用地分类, from: 表 3.1 用地分类表.面积列, unit: 平方米, required: true}
+    rounding: {decimals: 2, mode: half_up}
+    missing_policy: gap
+    checks: [unit_required, divide_nonzero]
+    note: 逐类占比（分母为 CALC-01 合计）；ratio 返回百分数；合计为 0 不产出 0%
+
+  - id: CALC-03
+    name: 合计行一致性校验
+    unit: "%"
+    formula: sum(ratio_i)
+    inputs:
+      - {key: area_i, label: 用地分类, from: 表 3.1 用地分类表.面积列, unit: 平方米, required: true}
+      - {key: ratio_i, label: 用地分类, from: 表 3.1 占比列, unit: "%", required: true}
+      - {key: area_total, label: 合计, from: 表 3.1 合计行.面积, unit: 平方米, required: false}
+    rounding: {decimals: 2, mode: half_up}
+    missing_policy: gap
+    checks:
+      - unit_required
+      - {name: sum_row, series: area_i, total: area_total}
+      - {name: ratio_sum_100, series: ratio_i, target: 100}
+    note: 合计=逐行之和（容差 tolerances.sum_row）；占比合计≈100%（容差 tolerances.ratio_sum 百分点）；不自动改数

@@ -1,0 +1,12 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch02
+  h1: 片区基础概况分析
+  unit: B
+  skill: cardo-status-chapter-area
+  sections:
+  - 区位条件
+  - 规划要求
+  - 历史沿革分析
+  min_chars: 1200

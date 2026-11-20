@@ -1,0 +1,30 @@
+# 质量评分表 v1（L3 评审用；每章 0–100）
+# 唯一真相：章节 skill 的自检、合成 skill 的质量门、L3 评审都引用本文件。
+schema: cardo/quality-rubric/v1
+version: 1
+score_min: 80
+dimensions:
+  - key: completeness
+    name: 完整回答必答问题
+    weight: 20
+    standard_80: 每节必答问题 ≥90% 有明确回答；缺数据的问题写清缺什么/找谁补
+  - key: quantified
+    name: 量化与可核验
+    weight: 25
+    standard_80: 每节 ≥2 个带口径/单位的数据或事实；全部可回源；数字与来源一致
+  - key: insight
+    name: 分析深度（判断+归因）
+    weight: 25
+    standard_80: 不止描述；给出差距/原因/影响，形成「现状→差距→成因→影响」链条
+  - key: consistency
+    name: 问题—对策一致
+    weight: 15
+    standard_80: 问题编号与对策映射 ≥80%；对策逐条回应问题
+  - key: language
+    name: 语言与版式
+    weight: 15
+    standard_80: 无禁句/重复；标题编号、表格题注、来源行、页眉页脚规范
+review:
+  mode: L3（独立评审，无历史上下文）
+  output: 每章 rubric 表 + P1/P2/P3 + 判定（通过/返工/阻塞）
+  rework: 低于 80 或存在 P1 → 返工；最多 2 轮；第 3 轮 Lead 裁定

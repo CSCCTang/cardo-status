@@ -1,0 +1,238 @@
+# 分类规则 v1（cardo-project-material）
+#
+# 本文件只描述「什么样算哪一类、归到哪个目录」，判定与归档由脚本执行；
+# 改分类口径只改这里，不改脚本。支持简化 YAML 子集：映射、缩进列表、
+# 行内列表 [a, b]、# 注释。
+#
+# 判定权重（写死于脚本，规则只提供材料）：
+#   文件名命中 filename_keywords：每词 +3
+#   中心词加成：所有命中词里「结束位置最靠后」的类别额外 +4（中文文件名中心词通常在末尾）
+#   正文命中 content_keywords：每词 +2，最多计 3 词（docx/xlsx/txt 可读文本；pdf 无解析库时读不到）
+#   路径命中 path_keywords：每词 +8
+#   扩展名命中 ext：+2
+#   priority 只用于同分排序与展示，不直接加分
+#
+# 去向与层级：目标目录 = dir + 原文件名。项目目录层级上限 2 层
+# （<项目>\02_分类材料\<类别目录>\ 即到底），因此默认不保留投递区子目录；
+# 只有同一类别目录里出现同名文件时才加「原父目录__」前缀区分。
+# 类别里 preserve_subdir: true 会在类别目录下再建原父目录（会超 2 层，默认全 false）。
+#
+# 自动归类闸门（默认值，可改）：
+#   最高分 < auto_min_score、或置信度 < confidence_threshold、
+#   或与次优类别相对差距 (top-second)/top < confidence_gap → 待确认，不自动归档
+
+version: 1
+
+# 投递区候选目录名，按顺序探测。
+# 命中 0 个或多个 → 触发闸门①，必须停下来问用户；实际用名以 00_项目索引.md 为准。
+delivery_candidates:
+  - 原始提供输入输出
+  - 01_原始输入
+  - 收件箱
+
+# 新项目建档时默认使用的投递区目录名（既有项目以实际存在/索引记录为准）
+default_delivery: 01_原始输入
+
+# 自动归类阈值（降低 = 更敢自动归档，升高 = 更多待确认）
+thresholds:
+  auto_min_score: 3.0
+  confidence_threshold: 0.55
+  confidence_gap: 0.15
+
+# 加工区目录（相对项目根），归档计划的去向以此为准
+dirs:
+  classified: 02_分类材料
+  extracted: 03_拆解成果
+  report: 04_成果报告
+  process: 05_过程
+  archive: 06_归档
+  legacy_output: 04_成果报告/90_既有成果
+  # 分类清单产出目录（与总控 01 步 --out 一致；02 齐套检查按此路径继承类别）
+  manifest_dir: 过程文件/01-建档与材料归集/分类清单
+
+# 扫描时忽略的文件（glob，匹配文件名）
+ignore:
+  - _放什么.md
+  - "~$*"
+  - ".*"
+  - Thumbs.db
+  - desktop.ini
+
+categories:
+  - id: feasibility
+    label: 可行性研究报告
+    dir: 02_分类材料/01_可研报告
+    ext: [pdf, docx, doc, wps]
+    filename_keywords: [可行性研究报告, 可研报告, 可研, 报批稿, 项目建议书, 建议书]
+    content_keywords: [项目概况, 建设必要性, 投资估算, 财务评价, 可行性研究, 建设方案]
+    path_keywords: []
+    priority: 90
+    preserve_subdir: false
+
+  - id: planning
+    label: 片区策划/城市设计
+    dir: 02_分类材料/02_片区策划与城市设计
+    ext: [pdf, docx, doc, ppt, pptx, jpg, jpeg, png]
+    filename_keywords: [片区策划, 城市设计, 城市更新策划, 策划方案, 更新策划, 前期沟通, 前期资料, 沟通汇报, 更新方案, 改造方案, 提升方案]
+    content_keywords: [片区策划, 城市设计, 更新单元, 规划范围, 城市更新]
+    path_keywords: []
+    priority: 85
+    preserve_subdir: false
+
+  - id: checkup
+    label: 城市体检报告
+    dir: 02_分类材料/03_城市体检
+    ext: [pdf, docx, doc, xlsx]
+    filename_keywords: [体检报告, 城市体检, 体检]
+    content_keywords: [城市体检, 体检指标, 指标评估, 体检结论]
+    path_keywords: []
+    priority: 85
+    preserve_subdir: false
+
+  - id: project_list
+    label: 项目清单/投资表
+    dir: 02_分类材料/04_项目清单与投资
+    ext: [xls, xlsx, pdf, docx, doc, csv]
+    filename_keywords: [项目清单, 清单, 投资, 资金申报, 附表, 估算表, 概算, 统计表, 工程量, 改造内容, 基本信息, 台账, 楼栋]
+    content_keywords: [项目清单, 总投资, 资金来源, 资金申报, 投资估算, 户数, 楼栋数, 建筑面积, 工程量]
+    path_keywords: []
+    priority: 80
+    preserve_subdir: false
+
+  - id: approval
+    label: 批复文件
+    dir: 02_分类材料/05_批复文件
+    ext: [pdf, docx, doc, jpg, jpeg, png]
+    filename_keywords: [批复, 请示, 审查意见, 核准, 备案, 复函, 函]
+    content_keywords: [批复, 原则同意, 同意, 请示]
+    path_keywords: []
+    priority: 80
+    preserve_subdir: false
+
+  - id: mapping
+    label: 测绘/图纸
+    dir: 02_分类材料/06_测绘图纸
+    # CAD 图纸与其伴随文件：这些格式读不出正文，靠扩展名 + 文件名判定，
+    # 不进人工闸门（否则图纸类项目 100% 待确认）。
+    ext: [pdf, dwg, dxf, shx, fas, dwf, dgn, rvt, jpg, jpeg, png, tif, tiff]
+    filename_keywords: [测绘, 地形图, 管线图, 附图, 图纸, 平面图, 规划图, 施工图]
+    content_keywords: [比例尺, 坐标, 图例]
+    path_keywords: []
+    priority: 70
+    preserve_subdir: false
+
+  # 压缩包：视为「投递的原始资料包」，按扩展名唯一命中归类，不逐件展开核对。
+  # （01 步的 unpack_delivery_zips 会先把 zip 解到 输入文件/解包-*/，此处归的是包本身。）
+  - id: archive
+    label: 原始资料压缩包
+    dir: 02_分类材料/08_原始资料包
+    ext: [zip, rar, 7z]
+    filename_keywords: []
+    content_keywords: []
+    path_keywords: []
+    priority: 20
+    preserve_subdir: false
+
+  - id: media
+    label: 影像资料
+    dir: 02_分类材料/07_影像资料
+    ext: [jpg, jpeg, png, heic, mp4, mov, avi, m4v]
+    filename_keywords: [航拍, 无人机, 现场照片, 影像, 视频, 照片]
+    content_keywords: []
+    path_keywords: []
+    priority: 65
+    preserve_subdir: false
+
+  - id: demand
+    label: 民意与需求
+    dir: 02_分类材料/09_民意与需求
+    ext: [doc, docx, pdf, xls, xlsx, csv, jpg, jpeg, png]
+    filename_keywords: [需求, 民意, 调研, 问卷, 座谈, 访谈, 征求意见, 居民意愿]
+    content_keywords: [居民意愿, 改造意愿, 诉求, 问卷, 征求意见]
+    path_keywords: []
+    priority: 75
+    preserve_subdir: false
+
+  - id: minutes
+    label: 会议纪要
+    dir: 02_分类材料/08_会议纪要
+    ext: [docx, doc, pdf, txt, md]
+    filename_keywords: [会议纪要, 纪要, 会议记录, 专题会, 协调会]
+    content_keywords: [会议时间, 参会人员, 议定事项, 会议纪要]
+    path_keywords: []
+    priority: 70
+    preserve_subdir: false
+
+  # 用户已经给过成稿/附表（如可研报告成稿、报批附表），属于「既有成果」，不进分类材料，
+  # 单独落 04_成果报告/90_既有成果，作为参考件。
+  # 注意：这类关键词要**特异**——「统计表」「工程量」这类词归 project_list，
+  # 若这里也写上，改造统计表会被误判成"既有成果报告"。
+  - id: output_report
+    label: 既有成果报告
+    dir: 04_成果报告/90_既有成果
+    ext: [docx, doc, xlsx, xls, pdf, pptx, ppt]
+    filename_keywords: [修订版, 既有成果, 现状分析报告, 附表]
+    content_keywords: [项目概况, 建设必要性, 投资估算]
+    path_keywords: [输出现状分析报告, 既有成果, 输出成果, 输出报告]
+    priority: 95
+    preserve_subdir: false
+
+  # 需求/意见类文档：社区、居民、业主提的城市更新需求与意见汇总。
+  # 单独归一类——它们是「事实来源」，不是清单也不是策划，
+  # 混进其它类别会让需求类内容在正文里找不到位置。
+  - id: demand
+    label: 需求与意见汇总
+    dir: 02_分类材料/09_需求与意见
+    ext: [docx, doc, pdf, xlsx, txt]
+    filename_keywords: [需求, 意见, 诉求, 问卷, 走访, 调研]
+    content_keywords: [需求, 诉求, 意见, 反映问题, 居民意见]
+    path_keywords: []
+    priority: 75
+    preserve_subdir: false
+
+  # 低空/OSGB 量化指标：定位是「指标证据」，不是材料正文。
+  # 进表 3.1 等指标表、附图、核心问题清单，作为指标值来源；正文叙述仍靠文字材料。
+  # 不指望它生成叙事段落，也不因生成不出正文而判失败。
+  - id: indicator_evidence
+    label: 低空量化指标（指标证据）
+    dir: 02_分类材料/10_低空指标
+    ext: [json, xlsx, xls, csv]
+    filename_keywords: [现状指标, 低空指标, 网格指标, 2.5D, 权重表, 评分表]
+    content_keywords: [building_count, buildingCount, roof, 占地, 层数, 屋顶形式, 破损, criteria, weight, ranking, consistency]
+    path_keywords: [06-2.5D网格指标, 低空解析, 上游机读件, 包内依据]
+    priority: 78
+    preserve_subdir: false
+
+  # 上游成果整包：AHP（指标权重与评分依据）/ OSGB（量化指标与体检依据）。
+  # 按整包形态（成果文件/成品版/内部件 + 目录名 + 件名）识别后由 01 直接认领，
+  # 不参与普通材料打分；包内中间件与模型资产登记「已见、不入正文」。
+  - id: upstream
+    label: 上游成果（AHP/OSGB）
+    dir: 02_分类材料/12_上游成果
+    ext: [json, xlsx, xls, csv, docx, pdf]
+    filename_keywords: []
+    content_keywords: []
+    path_keywords: []
+    priority: 90
+    preserve_subdir: false
+
+  # 兜底类别：不自动归档，只作为建议去向待确认。
+  # 工程日志/中间过程文件（.log）按扩展名归此，不逐条问用户。
+  - id: other
+    label: 其他
+    dir: 02_分类材料/99_其他
+    ext: [log]
+    filename_keywords: []
+    content_keywords: []
+    path_keywords: []
+    priority: 10
+    preserve_subdir: false
+
+# 派生材料：由 01 步从「有文本层的 PDF」逐页抽取的正文，只供事实抽取与引用。
+# 不放进 categories（不参与分类打分），也不进主线（03 汇编只扫 输入文件/）。
+derived:
+  - id: pdf_text
+    label: 非叙事材料 / PDF 文本
+    dir: 02_分类材料/11_PDF文本
+    usage: fact_only
+    note: 有文本层的 PDF 逐页抽取（保留页码）；不作章节结构来源、不生成整章正文；扫描件不解析

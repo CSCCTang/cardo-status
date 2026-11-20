@@ -1,0 +1,39 @@
+{
+  "name": "cardo-status",
+  "version": "0.1.0",
+  "description": "Cardo 现状分析流水线：材料归集、齐套检查、事实抽取与《现状分析报告》成文。",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "skills",
+    "README.md",
+    "assets",
+    "requirements.txt",
+    "LICENSE",
+    "NOTICE",
+    "docs",
+    "THIRD_PARTY_LICENSES.md"
+  ],
+  "engines": {
+    "node": ">=24.9.0",
+    "dsh": ">=0.2.2-rc.5 <0.3.0"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml",
+      "platforms": [
+        "win32"
+      ]
+    }
+  },
+  "keywords": [
+    "cardo",
+    "dsh",
+    "dsh-plugin",
+    "skill"
+  ],
+  "license": "AGPL-3.0-or-later"
+}

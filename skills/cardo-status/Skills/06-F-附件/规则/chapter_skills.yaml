@@ -1,0 +1,13 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch06
+  h1: 附件
+  unit: F
+  skill: cardo-status-chapter-attachments
+  sections:
+  - 附件一 现有基础资料清单
+  - 附件二 图件与影像资料
+  - 附件三 专项台账
+  - 附件四 数据缺口清单
+  min_chars: 600

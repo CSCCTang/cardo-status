@@ -1,0 +1,374 @@
+# 章节契约 v1（cardo-status-report · T19）
+#
+# 是什么：模板每个节点（按出现顺序 t01–t23）在项目报告里“要写成什么样”的结构化判据。
+# 不变量：
+#   * 标题文字不进本文件——唯一真相是模板 docx（sha256 登记在 template.sha256）；
+#     本文件只登记节点顺序/层级/写作单元/要求条目；模板一改由 CHK-CONTRACT-1 报漂移。
+#   * 改契约 = 改标准：version+1 + 跑回归（见 docs/数据与标准基线.md §4）。
+#   * check: auto 由 check_contracts.py 判；check: manual 只进“人工确认清单”，不判 fail。
+#   * 方向键 = cardo-project-material/规则/项目库配置.yaml 的 directions（不写方向一/二/三）。
+#   * template.file 只是可读线索（相对数据区写法）；实际模板路径由 --template /
+#     项目内 05_过程/模板/ / skill 自带模板 注入，脚本不按本字段找文件。
+
+schema: cardo/chapter-contract/v1
+version: 2
+template:
+  file: "标准模板/1 城市更新项目现状分析报告（模板）-补充数据来源（包含三类项目）.docx"
+  sha256: "758289c670056ee75987dbc2880a05d7fff9241a3b24742298f8bdac61497102"
+  max_level: 2
+
+extra_sections:
+  # 模板外允许出现的 H1/H2 白名单（问题分类 8 个 + 附件 5 个）。
+  # 未登记的新增 H1/H2 一律 fail（CHK-TPL-2）；新项目要加节，先改契约 + 升 version。
+  # level 只登记"模板外标题允许出现的层级上限"；CHK-TPL-2 实际按标题文字校验 H1/H2。
+  level: 3
+  titles:
+    - 街巷空间与肌理问题
+    - 建筑安全与风貌破损问题
+    - 文脉保护与活化不足问题
+    - 业态老旧与活力不足问题
+    - 交通通行与消防隐患突出问题
+    - 基础设施老旧滞后问题
+    - 民生配套与人居品质偏低
+    - 街区治理与运营短板
+    - 附件一 现有基础资料清单
+    - 附件二 图件与影像资料
+    - 附件三 专项台账
+    - 附件四 数据缺口索引
+    # v2：现状分析报告补三节——指标测算、成因分析、更新潜力（均落在本片区实测值上）
+    - 现状指标体系与测算结果
+    - 成因分析
+    - 更新潜力与问题识别
+    - 核心问题清单
+
+assertions: [CHK-TPL-1, CHK-TPL-2, CHK-SRC-1, CHK-BAN-1, CHK-NUM-1, CHK-GAP-1, CHK-CLEAN-1, CHK-REQ-1, CHK-TBL, CHK-DOCX-1, CHK-CONTRACT-1, CHK-DIR-1]
+banned_phrases_ref: "06-分章成文/规则/禁句表.yaml"
+banned_direction_markers: [方向二, 方向三]
+# CHK-NUM-1 白名单：确属政策/标准引用、原始材料里本来就没有的数值才登记（不得用来掩盖改数）。
+num_whitelist: []
+
+# 节点：id/level 由模板顺序生成；标题文字不在本文件。写作单元 A–E 与分章初稿/缺项字母共用。
+nodes:
+  - id: t01
+    level: 1
+    writing_unit: A
+    sources_row: not_required
+    requirements:
+      common:
+        - {id: t01-r1, type: section_exists, titles: [项目概况, 项目编制依据, 项目调研范围与期限], check: auto}
+        - {id: t01-r2, type: keywords_any, keywords: [建设单位, 建设性质, 建设内容], check: auto}
+    assertions: []
+  - id: t02
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料, 网络资料]
+    requirements:
+      common:
+        - {id: t02-r1, type: keywords_any, keywords: [四至, 范围, 面积], check: auto}
+        - {id: t02-r2, type: keywords_any, keywords: [投资, 资金来源], check: auto}
+        - {id: t02-r3, type: table_required, table: TBL-01, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t02-d1-1, type: keywords_any, keywords: [街巷, 住宅底商, 临街商铺], check: auto}
+        老旧厂区项目:
+          - {id: t02-d2-1, type: keywords_any, keywords: [厂房, 工业遗存, 厂区], check: auto}
+        老旧小区项目:
+          - {id: t02-d3-1, type: keywords_any, keywords: [住宅, 户数, 小区], check: auto}
+      manual:
+        - {id: t02-m1, type: manual, note: 项目名称、建设单位、建设性质须写实, check: manual}
+        - {id: t02-m2, type: manual, note: 有图则引用；无图用四至、面积与周边关系文字描述，不臆造图形、不出缺项, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t03
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料, 网络资料]
+    requirements:
+      common:
+        - {id: t03-r1, type: keywords_any, keywords: [编制依据, 法律法规, 政策], check: auto}
+      manual:
+        - {id: t03-m1, type: manual, note: 按国家/省/市/项目四层归并，重复文件只列一次, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t04
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料, 手动填写调研周期]
+    requirements:
+      common:
+        - {id: t04-r1, type: keywords_any, keywords: [调研范围, 调研期限, 四至], check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t04-d1-1, type: keywords_any, keywords: [街巷, 商户], check: auto}
+        老旧厂区项目:
+          - {id: t04-d2-1, type: keywords_any, keywords: [厂区, 工业遗存], check: auto}
+        老旧小区项目:
+          - {id: t04-d3-1, type: keywords_any, keywords: [小区, 户数], check: auto}
+      manual:
+        - {id: t04-m1, type: manual, note: 调研起止时间不能从材料取得时，按材料取得时点写基准时点并给初步判定；缺口登记进数据缺口清单, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t05
+    level: 1
+    writing_unit: A
+    sources_row: not_required
+    requirements:
+      common:
+        - {id: t05-r1, type: section_exists, titles: [区位条件, 规划要求, 历史沿革分析], check: auto}
+        - {id: t05-r2, type: keywords_any, keywords: [片区, 概况], check: auto}
+    assertions: []
+  - id: t06
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料, 网络资料]
+    requirements:
+      common:
+        - {id: t06-r1, type: keywords_any, keywords: [区位, 交通, 周边], check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t06-d1-1, type: keywords_any, keywords: [老城, 商圈, 文旅], check: auto}
+        老旧厂区项目:
+          - {id: t06-d2-1, type: keywords_any, keywords: [工业, 产业, 文创], check: auto}
+        老旧小区项目:
+          - {id: t06-d3-1, type: keywords_any, keywords: [居住, 学校, 医院], check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t07
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 网络资料]
+    requirements:
+      common:
+        - {id: t07-r1, type: keywords_any, keywords: [规划, 控规, 定位], check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t07-d1-1, type: keywords_any, keywords: [保护, 风貌, 管控], check: auto}
+        老旧厂区项目:
+          - {id: t07-d2-1, type: keywords_any, keywords: [控规, 产业, 转型], check: auto}
+        老旧小区项目:
+          - {id: t07-d3-1, type: keywords_any, keywords: [规划, 配套], check: auto}
+      manual:
+        - {id: t07-m1, type: manual, note: 刚性管控指标拿不到时只写定性边界并给初步判定（推断＋置信度）；缺口登记进数据缺口清单，不出缺项, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t08
+    level: 2
+    writing_unit: A
+    sources_row: required
+    source_hints: [项目资料, 网络资料]
+    requirements:
+      common:
+        - {id: t08-r1, type: keywords_any, keywords: [历史, 沿革, 文脉], check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t08-d1-1, type: keywords_any, keywords: [街巷, 肌理, 老字号], check: auto}
+        老旧厂区项目:
+          - {id: t08-d2-1, type: keywords_any, keywords: [工业遗存, 建设年代], check: auto}
+        老旧小区项目:
+          - {id: t08-d3-1, type: manual, note: 方向三该节声明不涉及：正文不应出现小区历史沿革内容, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t09
+    level: 1
+    writing_unit: B
+    sources_row: not_required
+    requirements:
+      common:
+        - {id: t09-r1, type: section_exists, titles: [土地与空间利用现状, 建筑现状与风貌保护现状, 人口与社会人居现状, 街区业态与经营现状, 交通与通行现状, 市政基础设施现状, 公共服务配套现状, 生态与人居环境现状], check: auto}
+        - {id: t09-r2, type: keywords_any, keywords: [现状, 分析], check: auto}
+    assertions: []
+  - id: t10
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料, 网络资料]
+    requirements:
+      common:
+        - {id: t10-r1, type: keywords_any, keywords: [用地, 面积, 权属], check: auto}
+        - {id: t10-r2, type: min_chars, min: 300, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t10-d1-1, type: keywords_any, keywords: [用地性质, 公共空间, 空间利用], check: auto}
+        老旧厂区项目:
+          - {id: t10-d2-1, type: keywords_any, keywords: [用地, 建设强度, 低效], check: auto}
+        老旧小区项目:
+          - {id: t10-d3-1, type: keywords_any, keywords: [用地性质, 权属], check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t11
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t11-r1, type: keywords_any, keywords: [建筑, 风貌, 安全], check: auto}
+        - {id: t11-r2, type: min_chars, min: 300, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t11-d1-1, type: keywords_any, keywords: [建筑安全, 历史风貌, 合规], check: auto}
+        老旧厂区项目:
+          - {id: t11-d2-1, type: keywords_any, keywords: [厂房, 工业遗存, 风貌], check: auto}
+        老旧小区项目:
+          - {id: t11-d3-1, type: keywords_any, keywords: [建筑, 老化, 合规], check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t12
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [网络资料, 项目资料]
+    requirements:
+      common:
+        - {id: t12-r1, type: keywords_any, keywords: [人口, 人居, 诉求], check: auto}
+        - {id: t12-r2, type: min_chars, min: 300, check: auto}
+      manual:
+        - {id: t12-m1, type: manual, note: 人口结构、人居特征、民生诉求三段都要有，不止写人口数, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t13
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t13-r1, type: keywords_any, keywords: [业态, 经营, 商铺], check: auto}
+        - {id: t13-r2, type: min_chars, min: 300, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t13-d1-1, type: keywords_any, keywords: [业态分布, 业态质量, 业态问题], check: auto}
+        老旧厂区项目:
+          - {id: t13-d2-1, type: manual, note: 该节仅老旧街区适用：厂区不写业态章节内容, check: manual}
+        老旧小区项目:
+          - {id: t13-d3-1, type: manual, note: 该节仅老旧街区适用：小区不写业态章节内容, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t14
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t14-r1, type: keywords_any, keywords: [交通, 通行, 停车], check: auto}
+        - {id: t14-r2, type: min_chars, min: 300, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t14-d1-1, type: keywords_any, keywords: [街巷, 慢行, 停车], check: auto}
+        老旧厂区项目:
+          - {id: t14-d2-1, type: keywords_any, keywords: [道路, 停车, 交通], check: auto}
+        老旧小区项目:
+          - {id: t14-d3-1, type: keywords_any, keywords: [交通, 停车, 无障碍], check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t15
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t15-r1, type: keywords_any, keywords: [管线, 管网, 消防], check: auto}
+        - {id: t15-r2, type: min_chars, min: 300, check: auto}
+      manual:
+        - {id: t15-m1, type: manual, note: 管线、环卫、消防三块都要落到现状问题，不能只写“设施老旧”, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t16
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t16-r1, type: keywords_any, keywords: [公共服务, 配套, 设施], check: auto}
+        - {id: t16-r2, type: min_chars, min: 300, check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t16-d1-1, type: keywords_any, keywords: [社区服务, 养老, 便民], check: auto}
+        老旧厂区项目:
+          - {id: t16-d2-1, type: manual, note: 该节老旧厂区不涉及：正文不写公服配套现状, check: manual}
+        老旧小区项目:
+          - {id: t16-d3-1, type: keywords_any, keywords: [社区服务, 养老, 便民], check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t17
+    level: 2
+    writing_unit: B
+    sources_row: required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t17-r1, type: keywords_any, keywords: [绿化, 环境, 小微空间], check: auto}
+        - {id: t17-r2, type: min_chars, min: 300, check: auto}
+    assertions: [CHK-SRC-1]
+  - id: t18
+    level: 1
+    writing_unit: C
+    sources_row: not_required
+    source_hints: [项目资料, 无人机航拍资料]
+    requirements:
+      common:
+        - {id: t18-r1, type: keywords_any, keywords: [核心问题, 问题清单], check: auto}
+        - {id: t18-r2, type: table_required, table: TBL-02, check: auto}
+      manual:
+        - {id: t18-m1, type: manual, note: 八类问题每类都给初步判定，按表现/证据或推断依据/成因/影响/对应更新方向五要素写；数据不足时写「初步判定＋推断依据＋置信度」，不得整列「资料缺失」, check: manual}
+    assertions: []
+  - id: t19
+    level: 1
+    writing_unit: D
+    sources_row: not_required
+    requirements:
+      common:
+        - {id: t19-r1, type: section_exists, titles: [综合现状研判, 总体更新思路, 核心更新改造方向], check: auto}
+        - {id: t19-r2, type: keywords_any, keywords: [研判, 更新思路], check: auto}
+    assertions: []
+  - id: t20
+    level: 2
+    writing_unit: D
+    sources_row: required
+    source_hints: [基于前述分析结合项目资料]
+    requirements:
+      common:
+        - {id: t20-r1, type: keywords_any, keywords: [研判, 潜力, 差距], check: auto}
+      manual:
+        - {id: t20-m1, type: manual, note: 评价、潜力、问题总结、差距四件事都要有, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t21
+    level: 2
+    writing_unit: D
+    sources_row: required
+    source_hints: [基于前述分析结合项目资料]
+    requirements:
+      common:
+        - {id: t21-r1, type: keywords_any, keywords: [保护, 微改, 大拆大建], check: auto}
+      manual:
+        - {id: t21-m1, type: manual, note: 更新原则与方向须与项目方向一致，不得混入其他方向表述, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t22
+    level: 2
+    writing_unit: D
+    sources_row: required
+    source_hints: [基于前述分析结合项目资料]
+    requirements:
+      common:
+        - {id: t22-r1, type: keywords_any, keywords: [风貌, 安全, 治理], check: auto}
+      by_direction:
+        老旧街区项目:
+          - {id: t22-d1-1, type: keywords_any, keywords: [风貌文脉, 安全隐患, 业态], check: auto}
+        老旧厂区项目:
+          - {id: t22-d2-1, type: keywords_any, keywords: [产业, 遗存, 转型], check: auto}
+        老旧小区项目:
+          - {id: t22-d3-1, type: keywords_any, keywords: [适老, 配套, 治理], check: auto}
+      manual:
+        - {id: t22-m1, type: manual, note: 改造方向是研判结论，不写具体设计做法与工程量, check: manual}
+    assertions: [CHK-SRC-1]
+  - id: t23
+    level: 1
+    writing_unit: E
+    sources_row: not_required
+    source_hints: [结合项目资料进行整理]
+    requirements:
+      common:
+        - {id: t23-r1, type: section_exists, titles: [附件一, 附件二, 附件三], check: auto}
+        - {id: t23-r2, type: table_required, table: TBL-03, check: auto}
+        - {id: t23-r3, type: table_required, table: TBL-04, check: auto}
+        - {id: t23-r4, type: table_required, table: TBL-05, check: auto}
+        - {id: t23-r5, type: table_required, table: TBL-06, check: auto}
+      manual:
+        - {id: t23-m1, type: manual, note: 附件二只列本次实际收到的图件；未收到不列待补、不出缺项，不影响结论, check: manual}
+    assertions: []
+

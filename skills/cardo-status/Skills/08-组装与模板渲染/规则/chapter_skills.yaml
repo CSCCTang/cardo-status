@@ -1,0 +1,51 @@
+# 章节 ↔ skill 映射 v1（模板 6 章；标题唯一真相=模板 docx）
+# 唯一真相：编排 skill、合成 skill、章节 skill 自检都引用本文件。
+schema: cardo/chapter-skills/v1
+version: 1
+template_h1:
+  - 项目概述
+  - 片区基础概况分析
+  - 现状详细分析
+  - 核心问题汇总
+  - 现状综合研判与更新思路
+  - 附件
+chapters:
+  - id: ch01
+    h1: 项目概述
+    unit: A
+    skill: cardo-status-chapter-overview
+    sections: [项目概况, 项目编制依据, 项目调研范围与期限]
+    min_chars: 1200
+  - id: ch02
+    h1: 片区基础概况分析
+    unit: B
+    skill: cardo-status-chapter-area
+    sections: [区位条件, 规划要求, 历史沿革分析]
+    min_chars: 1200
+  - id: ch03
+    h1: 现状详细分析
+    unit: C
+    skill: cardo-status-chapter-current
+    sections: [土地与空间利用现状, 建筑现状与风貌保护现状, 人口与社会人居现状, 街区业态与经营现状, 交通与通行现状, 市政基础设施现状, 公共服务配套现状, 生态与人居环境现状]
+    min_chars: 4000
+  - id: ch04
+    h1: 核心问题汇总
+    unit: D
+    skill: cardo-status-chapter-problems
+    sections: [街巷空间与肌理问题, 建筑安全与风貌破损问题, 文脉保护与活化不足问题, 业态老旧与活力不足问题, 交通通行与消防隐患突出问题, 基础设施老旧滞后问题, 民生配套与人居品质偏低, 街区治理与运营短板]
+    min_chars: 3000
+  - id: ch05
+    h1: 现状综合研判与更新思路
+    unit: E
+    skill: cardo-status-chapter-strategy
+    sections: [综合现状研判, 总体更新思路, 核心更新改造方向]
+    min_chars: 1500
+  - id: ch06
+    h1: 附件
+    unit: F
+    skill: cardo-status-chapter-attachments
+    sections: [附件一 现有基础资料清单, 附件二 图件与影像资料, 附件三 专项台账, 附件四 数据缺口清单]
+    min_chars: 600
+notes:
+  - 分章稿文件名沿用 `<unit>_<H1>.md`；章节 skill 只写自己那一个文件。
+  - 标题必须与模板逐字一致；模板改动=改标准（spec 校验会报漂移）。

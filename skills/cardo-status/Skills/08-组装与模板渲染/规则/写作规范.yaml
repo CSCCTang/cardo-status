@@ -1,0 +1,7 @@
+# 写作规范（引用桩）
+# 唯一真相：06-分章成文/规则/写作规范.yaml。本目录不再复制正文，避免多处漂移。
+schema: cardo/writing-spec/v1
+version: 2
+see: 06-分章成文/规则/写作规范.yaml
+banned_phrases_ref: 06-分章成文/规则/禁句表.yaml
+note: 只作存在性占位；所有写作判据以 06 的规范与 禁句表.yaml 为准。

@@ -1,0 +1,18 @@
+# CardoStatus 运行依赖
+python-docx>=1.1,<2
+openpyxl>=3.1,<4
+PyYAML>=6,<7
+
+# ── 材料归类增强（2026-10-30 补；2026-11-11 口径更正）────────────
+# 注意：这几项只用于**判断材料是什么**（首页采样、图幅识别），以及有文本层 PDF 的全文抽取；
+# 抽出的 PDF 文本只作事实证据（带页码），不生成正文、不作章节结构来源。
+# pymupdf：PDF 采样（判「文书 / 扫描件 / 图纸」）+ 有文本层 PDF 逐页抽全文。
+pymupdf>=2.0,<3
+# pypdf：pymupdf 不可用时的轻量兜底（采样与全文抽取，不拟合正文）。
+pypdf>=3.17,<5
+# rapidocr-onnxruntime：扫描页渲染后的字面量判断（纯 onnx，模型随包，离线可用），
+#          结果只进归类依据，不进正文。没装时按文件名归类，不影响流水线跑通。
+rapidocr-onnxruntime>=1.2,<2
+opencv-python-headless>=4.9
+onnxruntime>=1.16
+numpy>=1.26

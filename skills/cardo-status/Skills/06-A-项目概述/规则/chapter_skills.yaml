@@ -1,0 +1,12 @@
+schema: cardo/chapter-skills/v1
+version: 1
+chapters:
+- id: ch01
+  h1: 项目概述
+  unit: A
+  skill: cardo-status-chapter-overview
+  sections:
+  - 项目概况
+  - 项目编制依据
+  - 项目调研范围与期限
+  min_chars: 1200
