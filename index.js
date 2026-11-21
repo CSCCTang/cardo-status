@@ -19,6 +19,7 @@ export function apply(ctx) {
     name: 'cardo-status',
     description: "Cardo 现状分析流水线：材料归集、齐套检查、事实抽取与《现状分析报告》成文。",
     whenToUse: "用户要基于现状底稿与项目资料产出《现状分析报告》《输入材料补齐确认单》《数据缺口清单》时使用。",
+    source: 'custom',
     content: skillBody(readFileSync(join(skillDir, 'SKILL.md'), 'utf8')),
     resourceBase: { kind: 'directory', path: skillDir },
   })

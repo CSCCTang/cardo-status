@@ -18,11 +18,11 @@ C 是 A 系 + 规则副本在位检查（44 条），D/E/F 另一套（id/status
     "summary","exit_code"}；--out 一律按“文件路径”直写该文件（不再当目录）。
 
 用法：
-    python Skills/06-分章成文/scripts/check_chapter.py --unit C --project-dir . \
+    python <技能目录>/Skills/06-分章成文/scripts/check_chapter.py --unit C --project-dir . \
         --draft 过程文件/06-分章成文/分章初稿/C_现状详细分析.md \
         --direction 老旧街区 --out 过程文件/06-分章成文/自检/C.json
-    python Skills/06-分章成文/scripts/check_chapter.py --unit D --draft D_核心问题汇总.md
-    python Skills/06-分章成文/scripts/check_chapter.py --unit A --root <项目库根> --project <项目名>
+    python <技能目录>/Skills/06-分章成文/scripts/check_chapter.py --unit D --draft D_核心问题汇总.md
+    python <技能目录>/Skills/06-分章成文/scripts/check_chapter.py --unit A --root <项目库根> --project <项目名>
 
 退出码：0 无 FAIL；1 有 FAIL；2 参数/输入错误。只读草稿，只写 --out；仅标准库。
 """

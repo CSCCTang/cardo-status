@@ -3,9 +3,9 @@
 """CardoStatus 现状分析总控：九步流水线（run / status / scaffold）。
 
 用法（工作区任意路径，无绝对路径硬编码）：
-    python Skills/00-Cardo现状分析总控/scripts/pipeline.py run
-    python Skills/00-Cardo现状分析总控/scripts/pipeline.py status
-    python Skills/00-Cardo现状分析总控/scripts/pipeline.py scaffold --dest <新工作区> \
+    python <技能目录>/Skills/00-Cardo现状分析总控/scripts/pipeline.py run
+    python <技能目录>/Skills/00-Cardo现状分析总控/scripts/pipeline.py status
+    python <技能目录>/Skills/00-Cardo现状分析总控/scripts/pipeline.py scaffold --dest <新工作区> \
         --project <项目名> --direction 老旧街区|老旧小区|老旧厂区 \
         --template <模板.docx> --source <原始报告.docx> [--materials <目录>]
 
@@ -1508,7 +1508,7 @@ def cmd_scaffold(args):
          "notes": "scaffold 生成；模板在根目录 提资数据/（相对路径），source_report 为人工指定的只读原件。"}
     dump_json(dest / "工作区参数.json", p)
     print(f"已创建新工作区：{dest}")
-    print(f"  下一步：cd 到该目录后运行 python Skills/00-Cardo现状分析总控/scripts/pipeline.py run")
+    print(f"  下一步：cd 到该目录后运行 python <技能目录>/Skills/00-Cardo现状分析总控/scripts/pipeline.py run")
     return 0
 
 

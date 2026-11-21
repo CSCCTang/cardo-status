@@ -304,8 +304,8 @@ def write_intake_list(rows, params: dict | None = None,
                                           else "照常开工，产物给初步判定（推断＋置信度），缺口进数据缺口清单"), ""]
     lines += ["## 3. 下一步", "",
               "```text",
-              "python {}\\开工.py            # 直接校验并开工（参数会自动识别）".format(SKILL.name),
-              "python {}\\开工.py --intake   # 一项一项问，确认落位".format(SKILL.name),
+              "python <技能目录>/scripts/cardo.py            # 直接校验并开工（参数会自动识别）".format(SKILL.name),
+              "python <技能目录>/scripts/cardo.py --intake   # 一项一项问，确认落位".format(SKILL.name),
               "```", ""]
     target.write_text("\n".join(lines), encoding="utf-8")
     return target
@@ -1273,7 +1273,10 @@ def cmd_hint(*args: str) -> str:
             exe = exe.replace("/", "\\")
     else:
         exe = "python"
-    parts = [exe, "{}\\开工.py".format(SKILL.name)]
+    if RUNTIME_PY.is_file():
+        parts = [exe, "{}\\开工.py".format(SKILL.name)]
+    else:
+        parts = ["python", "<技能目录>/scripts/cardo.py"]
     parts.extend(args)
     return " ".join(parts)
 

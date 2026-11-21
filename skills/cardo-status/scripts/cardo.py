@@ -2,23 +2,33 @@
 """Cardo 插件启动器（cardo-status）。
 
 用法（<技能目录> 取工具结果 <skill_resources> 的 resourceBase）：
-    python <技能目录>/scripts/cardo.py --doctor         检查交付包与运行时
+    python <技能目录>/scripts/cardo.py --doctor         检查交付包、运行时与默认工作区
     python <技能目录>/scripts/cardo.py --where          打印交付包目录
     python <技能目录>/scripts/cardo.py [开工.py 参数...] 以当前目录为工作区运行开工.py
 
-定位顺序：--package > CARDO_PACKAGE > CARDO_HOME/CardoStatus > 当前目录及上三级 > %USERPROFILE%/Cardo交付。
-运行时顺序：CARDO_RUNTIME（runtime 目录）> 交付包自带 runtime > CARDO_RUNTIME_HOME/CardoStatus/runtime
-> CARDO_HOME/CardoStatus/runtime。不联网、不装依赖。
+工作区：默认取当前目录；第一次调用先建目录架构（幂等，已存在不覆盖）并逐条说明放什么。
+工作区还没有任何输入/过程件、且没有给流水线参数时，只建目录并停下等料，不自行往下跑。
+显式 --workspace 越界（插件安装目录 / DSH_HOME）时拒绝并给出可用默认路径；
+未显式指定且当前目录越界时，改用默认工作区 %USERPROFILE%/Cardo工作区/cardo-status-<时间戳>。
+
+定位顺序：技能目录自带包 > --package > CARDO_PACKAGE > CARDO_HOME > 当前目录及上三级。
+运行时顺序：CARDO_RUNTIME > 包内 runtime > CARDO_RUNTIME_HOME；都没有时用系统 Python，
+首次运行由 开工.py 按 requirements.txt 在用户缓存建虚拟环境。不联网、不装依赖。
 """
 from __future__ import annotations
 
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 PACKAGE = "CardoStatus"
 ENTRY = "开工.py"
+NAME = "cardo-status"
+# 工作区目录架构与用途：与包内 开工.py 的 DIRS 对齐；只建目录，不写内容
+DIR_GUIDE = [('输入文件', '放原始材料（现状底稿、项目资料，任意层级）'), ('输入文件-模板', '待填模板放这里'), ('提资数据/模板', '现状底稿模板'), ('过程文件', '流水线中间件与运行报告，跑完之前不要动'), ('成果文件', '最终交付件，跑完在这里取'), ('记忆与规则', '本项目的规则与记忆，跨会话复用')]
+DIRS = [rel for rel, _ in DIR_GUIDE]
 
 
 def _roots():
@@ -117,13 +127,72 @@ def python_for(pkg):
     return dirs[0] / "python" / exe, dirs[0]
 
 
+def _default_workspace() -> Path:
+    """越界或缺失时的可用默认工作区；根目录可用 CARDO_WORKSPACE_HOME 覆盖。"""
+    root = os.environ.get("CARDO_WORKSPACE_HOME") or str(Path.home() / "Cardo工作区")
+    return Path(root) / ("%s-%s" % (NAME, time.strftime("%Y%m%d-%H%M%S")))
+
+
+def scaffold(ws: Path):
+    """按约定建工作区目录架构：幂等，已存在不动、不覆盖。"""
+    made = []
+    for rel in DIRS:
+        target = ws / rel
+        if target.is_dir():
+            continue
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+            made.append(rel)
+        except OSError as exc:
+            print("目录建不出来：%s（%s）" % (target, exc), file=sys.stderr)
+    return made
+
+
+def _cell_width(text: str) -> int:
+    """中文按两格算，保证目录说明上下对齐。"""
+    return sum(2 if ord(ch) > 127 else 1 for ch in text)
+
+
+def print_guide(ws: Path) -> None:
+    """逐条说明每个目录放什么（首次调用 / 等料时打印）。"""
+    print("工作区：%s" % ws, flush=True)
+    print("目录架构（已存在的不覆盖）：", flush=True)
+    width = max(_cell_width(rel) for rel in DIRS) + 2
+    for rel, desc in DIR_GUIDE:
+        label = rel + "\\"
+        print("  %s%s  %s" % (label, " " * (width - _cell_width(label)), desc), flush=True)
+
+
+def _has_files(ws: Path, *names) -> bool:
+    for name in names:
+        d = ws / name
+        if d.is_dir() and any(p.is_file() for p in d.rglob("*")):
+            return True
+    return False
+
+
+def _forbidden_roots(pkg):
+    here = Path(__file__).resolve()
+    roots = [here.parents[1], here.parents[2], here.parents[3]]
+    if pkg is not None:
+        roots.append(pkg.resolve())
+    if os.environ.get("DSH_HOME"):
+        try:
+            roots.append(Path(os.environ["DSH_HOME"]).expanduser().resolve())
+        except OSError:
+            pass
+    return roots
+
+
 def doctor():
     pkg = locate()
+    print("默认工作区：%s（--workspace 越界或当前目录越界时启用）" % _default_workspace())
+    print("工作区目录架构：%s" % "、".join(DIRS))
     if pkg is None:
-        print("未找到 Cardo 交付包 CardoStatus。", file=sys.stderr)
-        print("请设置环境变量 CARDO_HOME，指向包含 CardoStatus\\ 的目录，例如：", file=sys.stderr)
+        print("未找到 Cardo 交付包 %s。" % PACKAGE, file=sys.stderr)
+        print("请设置环境变量 CARDO_HOME，指向包含 %s\\ 的目录，例如：" % PACKAGE, file=sys.stderr)
         print("  setx CARDO_HOME \"C:\\path\\to\\cardo\"", file=sys.stderr)
-        print("也可用 CARDO_PACKAGE 直接指向 CardoStatus 目录。", file=sys.stderr)
+        print("也可用 CARDO_PACKAGE 直接指向 %s 目录。" % PACKAGE, file=sys.stderr)
         return 2
     exe, rt = python_for(pkg)
     wire_runtime(pkg, rt)
@@ -135,9 +204,14 @@ def doctor():
     return 0 if exe.is_file() else 2
 
 
-def workspace_for(args, pkg):
-    """确定工作目录：只认用户给的路径（--workspace 或当前目录），不退回安装目录。"""
-    if "--workspace" in args:
+def workspace_for(args, pkg, allow_fallback=True):
+    """确定工作目录：只认用户给的路径（--workspace 或当前目录），不退回安装目录。
+
+    显式 --workspace 越界或不存在：拒绝，并给出可用默认路径。
+    未显式指定且当前目录越界：改用默认工作区（allow_fallback），并在输出里说明。
+    """
+    explicit = "--workspace" in args
+    if explicit:
         i = args.index("--workspace")
         if i + 1 >= len(args):
             print("--workspace 需要一个目录参数，例如 --workspace <文件夹>（当前包 " + PACKAGE + "）", file=sys.stderr)
@@ -150,20 +224,44 @@ def workspace_for(args, pkg):
     except OSError:
         print("工作目录无法解析：%s" % ws, file=sys.stderr)
         return None
-    # 插件包根（node_modules/cardo-*）：不许把成果写进安装目录
-    install_root = Path(__file__).resolve().parents[3]
-    homes = [pkg.resolve(), install_root]
-    if os.environ.get("DSH_HOME"):
-        homes.append(Path(os.environ["DSH_HOME"]).expanduser().resolve())
-    for root in homes:
-        if ws == root or root in ws.parents:
+
+    def _inside(root: Path) -> bool:
+        try:
+            return ws == root or root in ws.parents
+        except OSError:
+            return False
+
+    if any(_inside(root) for root in _forbidden_roots(pkg)):
+        hint = _default_workspace()
+        if explicit or not allow_fallback:
             print("工作目录不能设在插件安装目录或 DSH_HOME 内：%s" % ws, file=sys.stderr)
-            print("请新建一个空文件夹，用 --workspace <文件夹> 指定，或把它设为当前目录。", file=sys.stderr)
+            print("请换一个独立空文件夹；也可直接用默认工作区：", file=sys.stderr)
+            print("  python \"%s\" --workspace \"%s\"" % (Path(__file__).resolve(), hint), file=sys.stderr)
             return None
+        try:
+            hint.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            print("默认工作区建不出来：%s（%s）" % (hint, exc), file=sys.stderr)
+            print("请用 --workspace 指定一个独立空文件夹后重试。", file=sys.stderr)
+            return None
+        print("当前目录在插件安装目录或 DSH_HOME 内，已改用默认工作区：%s" % hint, file=sys.stderr)
+        print("下次可直接用 --workspace 指定自己的项目文件夹。", file=sys.stderr)
+        ws = hint.resolve()
+
     if not ws.is_dir():
-        print("工作目录不存在：%s" % ws, file=sys.stderr)
-        print("请先新建一个空文件夹，再把它作为工作目录。", file=sys.stderr)
-        return None
+        if explicit:
+            hint = _default_workspace()
+            print("工作目录不存在：%s" % ws, file=sys.stderr)
+            print("请先新建该文件夹，或改用默认工作区：", file=sys.stderr)
+            print("  python \"%s\" --workspace \"%s\"" % (Path(__file__).resolve(), hint), file=sys.stderr)
+            return None
+        try:
+            ws.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            print("工作目录不存在且建不出来：%s（%s）" % (ws, exc), file=sys.stderr)
+            return None
+        print("工作目录不存在，已新建：%s" % ws, file=sys.stderr)
+
     probe = ws / (".cardo-write-test-%d" % os.getpid())
     try:
         probe.write_bytes(b"")
@@ -175,13 +273,27 @@ def workspace_for(args, pkg):
     return ws
 
 
+def _action_args(args):
+    """去掉启动器自己的参数，只留下要转交 开工.py 的参数。"""
+    out, skip = [], False
+    for arg in args:
+        if skip:
+            skip = False
+            continue
+        if arg == "--workspace":
+            skip = True
+            continue
+        out.append(arg)
+    return out
+
+
 def main(argv):
     if "--doctor" in argv:
         return doctor()
     if "--where" in argv:
         pkg = locate()
         if pkg is None:
-            print("未找到交付包 CardoStatus", file=sys.stderr)
+            print("未找到交付包 %s" % PACKAGE, file=sys.stderr)
             return 2
         print(pkg)
         return 0
@@ -194,6 +306,22 @@ def main(argv):
         argv = argv[:i] + argv[i + 2:]
 
     pkg = locate()
+    args = list(argv)
+    ws = workspace_for(args, pkg)
+    if ws is None:
+        return 2
+    made = scaffold(ws)
+
+    # 开场：建完目录先说明放什么；还没有输入/过程件且没给流水线参数时，停下等料
+    intake = ("输入文件", "输入文件-模板", "提资数据", "过程文件", "成果文件")
+    if made or not _has_files(ws, *intake):
+        print_guide(ws)
+    if not _action_args(args) and not _has_files(ws, *intake):
+        print("", flush=True)
+        print("还没有输入文件，先不开工。请把材料放进上面的「输入文件」目录（缺什么、放哪里见各目录说明）。", flush=True)
+        print("放好后回一句「继续」，我再跑流水线。", flush=True)
+        return 0
+
     if pkg is None:
         return doctor()
     exe, rt = python_for(pkg)
@@ -204,10 +332,6 @@ def main(argv):
         print("或按交付包 runtime/README.txt 重新解压完整包后再试。", file=sys.stderr)
         return 2
 
-    args = list(argv)
-    ws = workspace_for(args, pkg)
-    if ws is None:
-        return 2
     if "--workspace" not in args:
         args = ["--workspace", str(ws)] + args
 
@@ -220,8 +344,8 @@ def main(argv):
         env["TEMP"] = env["TMP"] = str(scope_tmp)
     except OSError:
         pass
-    print("Cardo 包：%s" % pkg, file=sys.stderr)
-    print("工作区：%s" % ws, file=sys.stderr)
+    print("Cardo 包：%s" % pkg, file=sys.stderr, flush=True)
+    print("工作区：%s" % ws, file=sys.stderr, flush=True)
     try:
         return subprocess.call([str(exe), str(pkg / ENTRY), *args], cwd=str(ws), env=env)
     except KeyboardInterrupt:

@@ -4,41 +4,50 @@ description: Cardo 现状分析流水线（自包含）。当用户要基于现�
 ---
 > **dsh 插件运行方式（构建脚本生成，勿手改）**
 >
-> 本文件是插件 `cardo-status` 内嵌的技能正文。正文里出现的 `python CardoStatus\开工.py <参数>`，在本插件中一律改写为
-> `python <技能目录>/scripts/cardo.py <参数>`，其中 `<技能目录>` 取工具结果 `<skill_resources>` 里 resourceBase 给出的目录。
+> 本文件是插件 `cardo-status` 内嵌的技能正文。技能目录就是工具结果 `<skill_resources>` 里 `resourceBase` 给出的目录，
+> 下文记作 `<技能目录>`。**正文里的命令已全部写成 `python "<技能目录>/scripts/cardo.py" <参数>`**，
+> 照着执行即可：不要拼 `CardoStatus\...`、不要猜安装位置、也不要做路径替换。
+> `开工.py`、`Skills\`、`requirements.txt` 都与 `scripts\cardo.py` 同在技能目录内，由启动器转交。
 >
-> 启动器 `cardo.py` 负责定位 Cardo 交付包、用本机已有的 `runtime\python` 运行 `开工.py`，工作区默认取当前目录，
-> 不联网、不装依赖、不上传任何文件。定位顺序：`CARDO_PACKAGE` → `CARDO_HOME\CardoStatus` → 当前目录及上三级 → `%USERPROFILE%\Cardo交付`。
-> 运行时顺序：`CARDO_RUNTIME` → 交付包自带 `runtime` → `CARDO_RUNTIME_HOME\CardoStatus\runtime` → `CARDO_HOME\CardoStatus\runtime`。
+> 启动器 `cardo.py` 负责定位包内 `开工.py` 并选 Python：优先包内 `runtime\python`；派生包没有 runtime 时用系统
+> Python，并在 `%LOCALAPPDATA%\cardo\venv-status` 按 `requirements.txt` 建环境。不联网、不上传任何文件。
 >
-> 全部输入都是**本地文件夹或本地文件路径**：用户可在对话里直接给绝对路径，或用 dsh 自带的"选择工作区目录"把路径设为当前目录。
+> **工作目录**：给插件一个独立空文件夹（设为当前目录，或在命令后加 `--workspace "<工作区>"`）。
+> 首次在新工作区运行会先按约定建出目录架构（已存在则跳过、不覆盖），再交给 `开工.py`。
+> 不接受把工作目录设在插件安装目录（`node_modules\cardo-status`）或 `DSH_HOME` 内：
+> 显式 `--workspace` 越界会直接拒绝并给出可用默认路径；未指定 `--workspace` 且当前目录越界时，
+> 启动器改用默认工作区 `%USERPROFILE%\Cardo工作区\cardo-status-<时间戳>\`，并在输出里说明。
+>
+> 全部输入都是**本地文件夹或本地文件路径**：用户在对话里给绝对路径，或用 dsh 自带的“选择工作区目录”把路径设为当前目录。
 > 本包不自带前端界面，产物落在工作区，结果在对话里返回。
 >
-> **工作目录**：给插件一个独立空文件夹（`--workspace <文件夹>` 或设为当前目录），成果与中间件都只写在这里。
-> 不接受把工作目录设在插件安装目录（`node_modules\cardo-status`）、`DSH_HOME` 或交付包目录内——遇到就提示并停止。
-> 每次最好用新文件夹；多个包各用各的文件夹，互不读写。
->
-> 首次使用先跑 `python <技能目录>/scripts/cardo.py --doctor`；找不到交付包时按提示设置 `CARDO_HOME`
-> （指向包含 `CardoStatus\` 的目录，例如 `C:\path\to\cardo-packages`），运行时也可用 `CARDO_RUNTIME` 指向已有 runtime 目录。
+> **第一次调用**：先跑 `python "<技能目录>/scripts/cardo.py"`（不带参数）。它会在工作区建好目录架构、
+> 逐条说明每个目录放什么，然后停下等你放料；**没有输入不要自己往下跑**。
+> 环境自检用 `python "<技能目录>/scripts/cardo.py" --doctor`（打印交付包、入口、Python 与默认工作区）。
 
 # CardoStatus · 现状分析流水线
 
-一个文件夹就是这条流水线：把 `CardoStatus/` 整个放进用户的项目文件夹，**不用安装、不用配置**。
+一个文件夹就是这条流水线：独立使用时把 `CardoStatus/` 整个放进用户的项目文件夹；插件方式下它已装在技能目录里，**不用安装、不用配置**。
 
 **独立工作区、独立交付**：一个包一个工作区、一份交付；四包放同一目录不会自动串联，也不共用状态文件。
 跨包只靠产物交接——上游把产物复制到本包 `输入文件/`（任意层级），本包自己识别入账。
 低空产物在本包只作**指标证据**（指标表、附图、问题清单），不承担正文叙事。
 判断 vs 实测的分工与单会话自足要求，见《Cardo 四包通用规范》（`交付规范/Cardo四包通用规范.md`）。
 
+**交互节奏（插件版，四步）**：
+1. **进场先建目录**：第一次调用先跑 `python "<技能目录>/scripts/cardo.py"`，它会把 `输入文件\`、`过程文件\`、`成果文件\` 等目录建好（幂等，已存在不覆盖），并逐条说明每个目录放什么——把这段说明原样转给用户。
+2. **建完就停**：没有输入文件不开工。缺料时说清缺什么、放到哪个目录，等用户放好再继续。
+3. **岔口让用户拍板**：选方案、定口径、改参数、跳步这类判断，一次只问一个，摆出可选项请用户选，不替用户默认。
+4. **用户回「继续」后再跑**：材料到位后重跑 `python "<技能目录>/scripts/cardo.py"` 往下走。
+
 **放料清单**：`开工.py` 会在工作区生成 `放料清单.md`，列出要什么、放哪、现在到没到；本文档是执行细则。
 **首次运行自动备依赖**：缺依赖就在用户缓存（`%LOCALAPPDATA%\cardo\venv-status`）按 `requirements.txt`
 建虚拟环境并安装（阿里云→清华→USTC→官方源回退），之后复用；技能包目录保持只读。
 需本机已装 Python 3.9+。
 
-
 **技能包只读**：本文件夹里的 `SKILL.md`、`开工.py`、`requirements.txt`、`Skills/`、`assets/` 在开工过程中一个字节都不会被写；
 运行期状态只写工作区与用户缓存。
-工作区默认是**本文件夹的上一级目录**（独立使用时即项目文件夹，如 `XX项目/`；以插件方式安装时请用 `--workspace` 指定项目目录）：`输入文件/` 放料、`过程文件/` 留痕、`成果文件/` 出活，
+工作区默认取**当前目录**（插件方式；独立使用时是本文件夹的上一级目录，如 `XX项目/`）：`输入文件/` 放料、`过程文件/` 留痕、`成果文件/` 出活，
 `工作区参数.json` 和 `.cardo/`（虚拟环境）也在那里。换项目时把技能文件夹整体拷走即可，不会带走任何项目数据。
 
 ```
@@ -52,7 +61,7 @@ XX项目/
 在项目文件夹里执行命令（`--workspace` 可显式指定别的工作区）：
 
 ```powershell
-python CardoStatus\开工.py ...
+python "<技能目录>/scripts/cardo.py" ...
 ```
 
 ## 先看放料清单
@@ -61,7 +70,7 @@ python CardoStatus\开工.py ...
 每次运行都会刷新。想一项一项确认，就跑：
 
 ```text
-python CardoStatus\开工.py --intake
+python "<技能目录>/scripts/cardo.py" --intake
 ```
 
 它会一项一项问（回车=已放好，s=暂时没有，q=退出），并在你确认后**立即复扫**，没真的放进去不会放行；必需项缺失则停在这一步。
@@ -89,13 +98,13 @@ python CardoStatus\开工.py --intake
    要自己指定就加参数（**用户显式指定的永远优先于自动识别**）：
 
 ```powershell
-python CardoStatus\开工.py --project "项目全称" --direction "老旧小区" --source "XX现状分析.docx"
+python "<技能目录>/scripts/cardo.py" --project "项目全称" --direction "老旧小区" --source "XX现状分析.docx"
 ```
 
 3. **按退出码走**（见下）。需要人工介入时用 `--from <步>` 续跑，不要从头重跑。
 
 `开工.py` 每次运行都会：建齐目录 → 校验模板 sha（被改动即停）→ 缺依赖时在项目文件夹建 `.cardo/venv-status` 并按
-阿里云 → 清华 → USTC → 官方源 回退安装 → 校验输入与参数 → 调 01→09。可先跑 `python CardoStatus\开工.py --check` 只校验不开工。
+阿里云 → 清华 → USTC → 官方源 回退安装 → 校验输入与参数 → 调 01→09。可先跑 `python "<技能目录>/scripts/cardo.py" --check` 只校验不开工。
 
 ## 输入
 
@@ -133,14 +142,14 @@ python CardoStatus\开工.py --project "项目全称" --direction "老旧小区"
 
 1. **登记缺口**（默认）：写进《数据缺口清单》，照常出缺口版成果。
 2. **线下补**：说清要哪一份、找谁拿、放进 `输入文件/`。
-3. **检索补充**：跑 `python CardoStatus\开工.py --research`，生成
+3. **检索补充**：跑 `python "<技能目录>/scripts/cardo.py" --research`，生成
    `过程文件/00-总控/网络补料/检索任务清单.md`（查什么、为什么查、影响第几章、口径、关键词、优先级）。
    程序**不发起网络请求**：检索由 agent（或人）按清单执行，结果**落盘 + 回填台账**：
    - 落盘：每条一个文本文件 `材料/S-012_来源机构_2026-11-11.txt`（去导航广告后的正文）；
    - 回填：`检索台账.json`（schema `cardo/research-ledger/v1`），必填 `id / metric / publisher / title / url / date / quote / scope / file`；
      查不到写 `notFound: true` + `reason`，同样计数；
    - 正文引用写 `[S-012]`（编号即台账条目，条目即 `file` 指向的文件），08 自动生成《附件六 外部数据引用清单》；
-   - `python CardoStatus\开工.py --ledger` 单验台账；缺 URL／检索日期／原文摘录／落盘文件的条目视为无效。
+   - `python "<技能目录>/scripts/cardo.py" --ledger` 单验台账；缺 URL／检索日期／原文摘录／落盘文件的条目视为无效。
    - **底稿本身不能用检索替代**，缺就停；写「据公开资料」「按同类项目公开区间」却不带编号，09 直接判「空头依据」。
 
 ## 参数（工作区参数.json）
@@ -161,7 +170,7 @@ python CardoStatus\开工.py --project "项目全称" --direction "老旧小区"
 |---|---|---|
 | 0 | 01→09 全过 | 列成果，进入验收 |
 | 3 | 需要人工介入 —— 停点在 01 分类待确认（罕见）、04 严格复核（仅 `--strict-review`）、06 章节写作任务待 agent 成文 | 按输出逐条补；办完用 `--from <步>` 续跑 |
-| 1 | 流水线硬失败 —— 停点在 03 模板转储、05 事实抽取、07 指标计算、08 渲染、09 三重自检 | 读 `过程文件/00-总控/运行报告.md` 的失败定位，按步修数据/规则，`python CardoStatus\开工.py --from <步>`，不跳过 |
+| 1 | 流水线硬失败 —— 停点在 03 模板转储、05 事实抽取、07 指标计算、08 渲染、09 三重自检 | 读 `过程文件/00-总控/运行报告.md` 的失败定位，按步修数据/规则，`python "<技能目录>/scripts/cardo.py" --from <步>`，不跳过 |
 | 2 | 环境或结构问题 | Python 需 3.9+；模板被改动则删掉该模板文件后重跑；依赖装不上按提示换源或拷 wheel |
 
 **不会因为这些停下来**：缺参数（自动识别）、缺材料（登记缺口出缺口版）、多份源报告候选（自动选）、分类待确认（旧格式/图纸/图片已自动消化）、章节映射中等置信（默认自动采纳）。
@@ -175,17 +184,17 @@ python CardoStatus\开工.py --project "项目全称" --direction "老旧小区"
   逐条问用户归到哪类，写 `过程文件/01-建档与材料归集/分类确认.yaml`
   （`decisions[].file / category_id / note`）。类别：`feasibility` 可研、`planning` 片区策划、`checkup` 体检、
   `project_list` 清单/投资表、`approval` 批复、`mapping` 测绘图纸、`media` 影像、`minutes` 纪要、
-  `demand` 需求与意见、`output_report` 既有成果、`other` 其他。填完 `python CardoStatus\开工.py --from 01`。
+  `demand` 需求与意见、`output_report` 既有成果、`other` 其他。填完 `python "<技能目录>/scripts/cardo.py" --from 01`。
   - 常见情形已自动消化：旧版 doc/xls/ppt（读不出正文）、CAD 图纸、图片、压缩包**都不会**进这道闸门。
 - **02 先出稿 / 先补料**（默认「先出稿」）：缺料时**默认出缺口版**并逐项登记，不停下来问。
   只有你明确要先补齐材料，才加 `--material-choice 先补料` 让它停下等。
 - **04 章节映射确认**（默认自动采纳）：中等置信映射（领域同义词表给出的提案）**默认直接落位**，
   记在 `过程文件/04-章节映射/映射统计.json` 的 `adoptedMedium` 里，不打断。
   想逐条复核：写 `过程文件/04-章节映射/人工确认.yaml`（`nodes[].id` + `sources`，缺项写 `sources: []`），
-  再 `python CardoStatus\开工.py --from 04`；或运行时加 `--strict-review` 恢复旧的逐条确认行为。
+  再 `python "<技能目录>/scripts/cardo.py" --from 04`；或运行时加 `--strict-review` 恢复旧的逐条确认行为。
 - **06 章节写作**（exit 3，仅散材料模式）：读 `过程文件/06-分章成文/写作任务/写作任务.md`，
   由 agent/大模型按 skill 规范逐章成文，写入 `过程文件/06-分章成文/写作任务/分章初稿_待回填/<章>_<标题>.md`，
-  再 `python CardoStatus\开工.py --from 06`。
+  再 `python "<技能目录>/scripts/cardo.py" --from 06`。
   - 成文硬约束：只用任务包里列出的材料（**不得新增数字**）；缺什么写什么并登记缺项编号；
     每节末尾写一行来源行；禁词见 `06-分章成文/规则/写作规范.yaml`。
   - 不填也能跑：未回填的章走确定性降级成文（质量较低，但不阻断）。
