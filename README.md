@@ -35,6 +35,7 @@
 - 版本 `0.1.1`；许可证 **AGPL-3.0-or-later**，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
 - 第三方组件与许可证见 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)。
 - 运行环境：Windows；Python ≥ 3.11；dsh ≥ 0.2.2-rc.5。
+- 更新记录见 [CHANGELOG.md](CHANGELOG.md)（最近更新 2026-11-24）。
 
 ## 文档
 
