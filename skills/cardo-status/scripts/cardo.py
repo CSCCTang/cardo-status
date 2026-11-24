@@ -26,7 +26,7 @@ from pathlib import Path
 PACKAGE = "CardoStatus"
 ENTRY = "开工.py"
 NAME = "cardo-status"
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 # 工作区目录架构与用途：与包内 开工.py 的 DIRS 对齐；只建目录，不写内容
 DIR_GUIDE = [('输入文件', '放原始材料（现状底稿、项目资料，任意层级）'), ('输入文件-模板', '待填模板放这里'), ('提资数据/模板', '现状底稿模板'), ('过程文件', '流水线中间件与运行报告，跑完之前不要动'), ('成果文件', '最终交付件，跑完在这里取'), ('记忆与规则', '本项目的规则与记忆，跨会话复用')]
 DIRS = [rel for rel, _ in DIR_GUIDE]
