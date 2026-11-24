@@ -1,6 +1,6 @@
 {
   "name": "cardo-status",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cardo 现状分析流水线：材料归集、齐套检查、事实抽取与《现状分析报告》成文。",
   "type": "module",
   "main": "index.js",

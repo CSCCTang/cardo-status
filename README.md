@@ -1,8 +1,8 @@
 # cardo-status
 
 > 安装（二选一）：
-> `dsh plugin --profile <profile> add github:CSCCTang/cardo-status#v0.1.2`
-> `dsh plugin --profile <profile> add <本地路径>\cardo-status-0.1.2.tgz`
+> `dsh plugin --profile <profile> add github:CSCCTang/cardo-status#v0.1.3`
+> `dsh plugin --profile <profile> add <本地路径>\cardo-status-0.1.3.tgz`
 
 现状分析：给一批项目资料与现状底稿，产出《现状分析报告》《输入材料补齐确认单》《数据缺口清单》。
 
@@ -32,7 +32,7 @@
 
 ## 许可证与版本
 
-- 版本 `0.1.2`；许可证 **AGPL-3.0-or-later**，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+- 版本 `0.1.3`；许可证 **AGPL-3.0-or-later**，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
 - 第三方组件与许可证见 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)。
 - 运行环境：Windows；Python ≥ 3.11；dsh ≥ 0.2.2-rc.5。
 - 更新记录见 [CHANGELOG.md](CHANGELOG.md)（最近更新 2026-11-24）。

@@ -28,7 +28,7 @@ PENDING_IDS = {"C02", "C04"}
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 OFFICIAL_HINTS = (".gov.cn", "gov.cn", "pkulaw.com", "npc.gov.cn", "ndrc.gov.cn",
-                  "mohurd.gov.cn", "sc.gov.cn", "chengdu.gov.cn")
+                  "mohurd.gov.cn", "example.gov.cn", "example.gov.cn")
 
 
 def _norm(s: str) -> str:
