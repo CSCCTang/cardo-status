@@ -58,6 +58,19 @@ def verify_ledger(path: Path | None = None) -> dict:
         return json.load(f)
 
 
+def _level_rank(level: str) -> int:
+    """层级排序权重。库内层级可能是具体地名（如“四川省”“成都市”），
+    先按固定层级查，查不到再按行政区后缀兜底：省/自治区→1、市→2、其他→9。"""
+    level = (level or "").strip()
+    if level in LEVEL_ORDER:
+        return LEVEL_ORDER[level]
+    if level.endswith("省") or level.endswith("自治区"):
+        return 1
+    if level.endswith("市"):
+        return 2
+    return 9
+
+
 def classify(entry: dict) -> str:
     typ = (entry.get("类型") or "").strip()
     name = (entry.get("名称") or "").strip()
@@ -174,7 +187,7 @@ def render_basis_section(
         grouped[classify(e)].append(e)
 
     for c in grouped:
-        grouped[c].sort(key=lambda e: (LEVEL_ORDER.get(e.get("层级", ""), 9), e.get("id", "")))
+        grouped[c].sort(key=lambda e: (_level_rank(e.get("层级", "")), e.get("id", "")))
 
     counters = {c: len(grouped[c]) for c in CATEGORIES[:-1]}
     counters["项目资料"] = len(project_materials or [])
