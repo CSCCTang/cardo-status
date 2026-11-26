@@ -19,3 +19,6 @@ token.txt
 # 编辑器
 .vscode/
 .idea/
+
+# 本地 git 凭据（含 token），不入库
+.git-credentials
